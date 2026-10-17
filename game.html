@@ -1,0 +1,5313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Noob Sandbox</title>
+<link rel="icon" href="images/noobsandboxsmallicon.ico">
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #171304;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  user-select: none;
+  touch-action: none;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar {
+  position: fixed;
+  z-index: 50;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  background: rgba(17,12,30,.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 35px rgba(0,0,0,.3);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.brand img {
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,.72);
+  font-size: 13px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c59a16;
+  box-shadow: 0 0 12px #c59a16;
+}
+
+/* =========================
+   LEADERBOARD
+========================= */
+
+.leaderboard {
+  position: fixed;
+  z-index: 80;
+  top: 84px;
+  right: 16px;
+  width: 245px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 170px);
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 15px;
+  background: rgba(15,10,27,.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 15px 40px rgba(0,0,0,.28);
+  pointer-events: auto;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.leaderboard.hidden-for-spawn {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+}
+
+.leaderboard-title {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255,255,255,.65);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.leader-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 30px;
+  gap: 7px;
+  align-items: center;
+  min-height: 40px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.leader-main {
+  min-width: 0;
+}
+
+.leader-name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.leader-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.leader-type {
+  flex-shrink: 0;
+  color: rgba(255,255,255,.42);
+  font-size: 9px;
+}
+
+.leader-health-track {
+  width: 100%;
+  height: 5px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.09);
+}
+
+.leader-health-bar {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  transition: width .12s ease, background .12s ease;
+}
+
+.leader-health-text {
+  margin-top: 2px;
+  color: rgba(255,255,255,.42);
+  font-size: 8px;
+}
+
+.rename-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  color: white;
+  background: rgba(255,255,255,.07);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  touch-action: manipulation;
+}
+
+.rename-button:hover,
+.rename-button:active {
+  background: rgba(197,154,22,.25);
+}
+
+.leader-empty {
+  padding: 8px;
+  color: rgba(255,255,255,.4);
+  text-align: center;
+  font-size: 11px;
+}
+
+/* =========================
+   ASTRA BUTTON
+========================= */
+
+.astra-button {
+  position: fixed;
+  z-index: 60;
+  left: 16px;
+  bottom: 16px;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 16px;
+  background: rgba(18,12,31,.84);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 12px 35px rgba(0,0,0,.4);
+  cursor: pointer;
+}
+
+.astra-button img {
+  width: 31px;
+  height: 31px;
+}
+
+/* =========================
+   ASTRA PANEL
+========================= */
+
+.astra-panel {
+  position: fixed;
+  z-index: 59;
+  left: 16px;
+  bottom: 82px;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 105px);
+  overflow-y: auto;
+  padding: 17px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 19px;
+  background: rgba(15,10,27,.92);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.45);
+  opacity: 0;
+  transform: translateY(12px) scale(.96);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.astra-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.panel-title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.panel-subtitle {
+  margin-top: 3px;
+  margin-bottom: 17px;
+  color: rgba(255,255,255,.5);
+  font-size: 12px;
+}
+
+.setting {
+  margin-bottom: 16px;
+}
+
+.setting-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  font-size: 13px;
+  color: rgba(255,255,255,.78);
+}
+
+.setting-value {
+  color: #e0b72b;
+  font-weight: 800;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #c59a16;
+}
+
+input[type="color"] {
+  width: 100%;
+  height: 38px;
+  padding: 2px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(255,255,255,.08);
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.ui-button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 11px;
+  color: white;
+  background: rgba(255,255,255,.07);
+  cursor: pointer;
+  transition: background .15s ease, transform .12s ease;
+}
+
+.ui-button:hover {
+  background: rgba(255,255,255,.12);
+}
+
+.ui-button:active {
+  transform: scale(.97);
+}
+
+.ui-button.primary {
+  background: linear-gradient(135deg,#8f6f0b,#c59a16);
+}
+
+/* =========================
+   SPAWN BUTTON
+========================= */
+
+.spawn-button {
+  position: fixed;
+  z-index: 60;
+  right: 16px;
+  bottom: 16px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 16px;
+  color: white;
+  background: rgba(18,12,31,.84);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 12px 35px rgba(0,0,0,.4);
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* =========================
+   SPAWN MENU
+========================= */
+
+.spawn-menu {
+  position: fixed;
+  z-index: 90;
+  right: 16px;
+  bottom: 82px;
+  width: 255px;
+  max-width: calc(100vw - 32px);
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(15,10,27,.92);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.45);
+  opacity: 0;
+  transform: translateY(10px) scale(.96);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.spawn-menu.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.spawn-header {
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  font-weight: 800;
+  cursor: grab;
+}
+
+.spawn-options {
+  padding: 8px;
+}
+
+.spawn-option {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  color: white;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.spawn-option:hover {
+  background: rgba(197,154,22,.15);
+}
+
+/* =========================
+   0.5.0 ALPHA UI
+========================= */
+.alpha-badge {
+  display: inline-block;
+  margin: 0 0 15px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(197,154,22,.14);
+  border: 1px solid rgba(197,154,22,.28);
+  color: #e0b72b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+.major-section {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.major-title { font-size: 14px; font-weight: 800; margin-bottom: 10px; }
+.two-buttons { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:7px; }
+.two-buttons .ui-button { padding:9px 7px; font-size:11px; }
+.ui-button.selected { background: rgba(197,154,22,.28); border-color: rgba(224,183,43,.5); }
+/* =========================
+   MOBILE CONTROLS
+========================= */
+
+.mobile-controls {
+  position: fixed;
+  z-index: 45;
+  left: 15px;
+  right: 15px;
+  bottom: 86px;
+  display: none;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.joystick {
+  width: 112px;
+  height: 112px;
+  position: relative;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+  pointer-events: auto;
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  background: rgba(197,154,22,.72);
+  border: 1px solid rgba(255,255,255,.2);
+}
+
+.mobile-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.mobile-action {
+  width: 63px;
+  height: 63px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 50%;
+  color: white;
+  background: rgba(18,12,31,.85);
+  backdrop-filter: blur(12px);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.mobile-action.active {
+  background: rgba(197,154,22,.72);
+}
+
+@media (pointer: coarse) {
+  .mobile-controls {
+    display: flex;
+  }
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast {
+  position: fixed;
+  z-index: 100;
+  left: 50%;
+  bottom: 22px;
+  transform: translate(-50%,20px);
+  padding: 10px 15px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  background: rgba(17,11,29,.92);
+  backdrop-filter: blur(12px);
+  color: white;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%,0);
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    top: 9px;
+    left: 9px;
+    right: 9px;
+    height: 52px;
+  }
+
+  .status {
+    display: none;
+  }
+
+  .leaderboard {
+    top: 70px;
+    right: 9px;
+    width: 205px;
+    max-height: calc(100vh - 145px);
+  }
+
+  .astra-button {
+    left: 12px;
+    bottom: 12px;
+  }
+
+  .spawn-button {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .astra-panel {
+    left: 12px;
+    bottom: 76px;
+  }
+
+  .spawn-menu {
+    right: 12px;
+    bottom: 76px;
+  }
+}
+
+/* CHARACTER / NPC EDITOR */
+.editor-panel { position:fixed; z-index:120; left:50%; top:50%; transform:translate(-50%,-50%) scale(.96); width:330px; max-width:calc(100vw - 28px); max-height:calc(100vh - 40px); overflow:auto; padding:16px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:rgba(20,16,4,.96); backdrop-filter:blur(22px); box-shadow:0 25px 70px rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:.18s ease; }
+.editor-panel.open { opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto; }
+.editor-title { font-size:18px; font-weight:800; margin-bottom:4px; }
+.editor-subtitle { color:rgba(255,255,255,.62); font-size:12px; margin-bottom:14px; }
+.editor-close { position:absolute; top:10px; right:10px; width:30px; height:30px; border:0; border-radius:9px; color:white; background:rgba(255,255,255,.08); cursor:pointer; }
+.editor-row { display:flex; gap:8px; margin:7px 0; }
+.editor-row > * { flex:1; }
+.editor-input { width:100%; padding:10px; border:1px solid rgba(255,255,255,.1); border-radius:9px; color:white; background:rgba(255,255,255,.06); outline:none; }
+.editor-section { margin-top:13px; padding-top:12px; border-top:1px solid rgba(255,255,255,.08); }
+.editor-label { display:block; margin-bottom:6px; font-size:12px; color:rgba(255,255,255,.68); }
+
+
+.spawn-category {
+  padding: 10px 10px 5px;
+  color: rgba(255,255,255,.42);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+.controls-panel { position:fixed; z-index:125; left:50%; top:50%; transform:translate(-50%,-50%) scale(.96); width:340px; max-width:calc(100vw - 28px); padding:18px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:rgba(20,16,4,.97); backdrop-filter:blur(22px); box-shadow:0 25px 70px rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:.18s ease; }
+.controls-panel.open { opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto; }
+.controls-list { display:grid; gap:8px; }
+.controls-list div { display:flex; justify-content:space-between; gap:12px; padding:10px; border-radius:10px; background:rgba(255,255,255,.045); }
+.controls-list b { color:#e0b72b; font-size:11px; white-space:nowrap; }
+.controls-list span { color:rgba(255,255,255,.68); font-size:11px; text-align:right; }
+
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="topbar">
+  <div class="brand">
+    <img src="images/noobsandboxsmallicon.ico" alt="Noob Sandbox">
+    <span>Noob Sandbox</span>
+  </div>
+
+  <div class="status">
+    <span class="status-dot"></span>
+    <span id="characterStatus">No character found</span>
+  </div>
+</div>
+
+<div class="leaderboard">
+  <div class="leaderboard-title">Sandbox</div>
+  <div class="leaderboard-list" id="leaderboardList"></div>
+</div>
+
+<button class="astra-button" id="astraButton" aria-label="Astra menu">
+  <img src="images/noobsandboxsmallicon.ico" alt="Noob Sandbox">
+</button>
+
+<div class="astra-panel" id="astraPanel">
+
+  <div class="panel-title">Menu</div>
+
+  <div class="panel-subtitle">
+    Character and sandbox settings
+  </div>
+
+  <div class="alpha-badge">v0.5.0 Alpha • Part 2</div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <span>Walk Speed</span>
+      <span class="setting-value" id="walkSpeedValue">420</span>
+    </div>
+    <input id="walkSpeed" type="range" min="100" max="1200" step="10" value="420">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <span>Jump Power</span>
+      <span class="setting-value" id="jumpPowerValue">720</span>
+    </div>
+    <input id="jumpPower" type="range" min="200" max="1500" step="10" value="720">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <span>Running</span>
+      <span class="setting-value" id="runningValue">ON</span>
+    </div>
+
+    <button class="ui-button primary" id="runningToggle">
+      Running: ON
+    </button>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <span>Run Speed</span>
+      <span class="setting-value" id="runSpeedValue">700</span>
+    </div>
+    <input id="runSpeed" type="range" min="200" max="1800" step="10" value="700">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <span>God Mode</span>
+      <span class="setting-value" id="godModeValue">OFF</span>
+    </div>
+
+    <button class="ui-button" id="godModeToggle">
+      God Mode: OFF
+    </button>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label"><span>Head Color</span></div>
+    <input id="headColor" type="color" value="#F5CD30">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label"><span>Torso Color</span></div>
+    <input id="torsoColor" type="color" value="#0D69AC">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label"><span>Left Arm</span></div>
+    <input id="leftArmColor" type="color" value="#F5CD30">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label"><span>Right Arm</span></div>
+    <input id="rightArmColor" type="color" value="#F5CD30">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label"><span>Left Leg</span></div>
+    <input id="leftLegColor" type="color" value="#A4BD47">
+  </div>
+
+  <div class="setting">
+    <div class="setting-label"><span>Right Leg</span></div>
+    <input id="rightLegColor" type="color" value="#A4BD47">
+  </div>
+
+  <button class="ui-button" id="resetCharacter">
+    Reset Character
+  </button>
+
+  <br><br>
+
+  <button class="ui-button" id="deleteCharacter">
+    Delete Character
+  </button>
+
+  <div class="major-section">
+    <div class="major-title">Controls</div>
+    <button class="ui-button primary" id="controlsButton">🎮 Open Controls</button>
+  </div>
+
+  <div class="major-section">
+    <div class="major-title">NPC Controls</div>
+    <div class="setting-label"><span>Selected NPC</span><span class="setting-value" id="selectedNpcLabel">None</span></div>
+    <div class="two-buttons">
+      <button class="ui-button" id="npcPassive">Passive</button>
+      <button class="ui-button" id="npcFollow">Follow</button>
+      <button class="ui-button" id="npcAttack">Attack</button>
+      <button class="ui-button" id="npcDuplicate">Duplicate</button>
+    </div>
+    <button class="ui-button" id="npcDelete">Delete Selected</button>
+    <button class="ui-button" id="npcMovement">NPC Movement: ON</button>
+    <button class="ui-button" id="npcAttacks">NPC Attacks: ON</button>
+    <button class="ui-button" id="npcGod">Selected NPC God Mode: OFF</button>
+  </div>
+
+  <div class="major-section">
+    <div class="major-title">Sandbox</div>
+    <div class="two-buttons">
+      <button class="ui-button" id="toggleGrid">Grid: ON</button>
+      <button class="ui-button" id="toggleShader">Glow: ON</button>
+      <button class="ui-button" id="freezeAll">Freeze All</button>
+      <button class="ui-button" id="unfreezeAll">Unfreeze All</button>
+    </div>
+  </div>
+
+</div>
+
+<button class="spawn-button" id="spawnButton">+</button>
+
+<div class="spawn-menu" id="spawnMenu">
+
+  <div class="spawn-header" id="spawnHeader">
+    Spawn Menu
+  </div>
+
+  <div class="spawn-options">
+
+    <div class="spawn-category">CHARACTERS</div>
+    <button class="spawn-option" id="spawnMe">
+      🧍 My Character
+    </button>
+
+    <button class="spawn-option" id="spawnNoob">
+      🟨 Noob
+    </button>
+
+    <button class="spawn-option" id="customNpc">
+      🤖 Custom NPC
+    </button>
+
+    <div class="spawn-category">BLOCKS & OBJECTS</div>
+    <button class="spawn-option" id="spawnCrate">
+      📦 Crate
+    </button>
+
+    <button class="spawn-option" id="spawnBomb">
+      💣 Bomb
+    </button>
+
+    <button class="spawn-option" id="spawnBall">
+      ⚽ Ball
+    </button>
+
+    <div class="spawn-category">TOOLS</div>
+    <button class="spawn-option" id="sparkTool">
+      ⚡ Igniter
+    </button>
+
+    <button class="spawn-option" id="boomBlock">
+      💥 Boom Block
+    </button>
+
+    <button class="spawn-option" id="rocketLauncher">
+      🚀 Rocket Launcher
+    </button>
+
+    <button class="spawn-option" id="noobLauncher">
+      🟨 Noob Launcher
+    </button>
+
+    <button class="spawn-option" id="partRemover">
+      ✂️ Part Remover
+    </button>
+
+    <div class="spawn-category">SANDBOX</div>
+    <button class="spawn-option" id="resetSandbox">
+      ♻ Reset Sandbox
+    </button>
+
+  </div>
+</div>
+
+<div class="editor-panel" id="editorPanel">
+  <button class="editor-close" id="editorClose">×</button>
+  <div class="editor-title">Character Editor</div>
+  <div class="editor-subtitle" id="editorSubtitle">Edit the character or create a custom NPC.</div>
+  <div class="editor-section">
+    <label class="editor-label">Name</label>
+    <input class="editor-input" id="editorName" maxlength="24" placeholder="Character name">
+  </div>
+  <div class="editor-section">
+    <div class="editor-label">Body Colors</div>
+    <div class="editor-row"><input id="editorHead" type="color"><input id="editorTorso" type="color"></div>
+    <div class="editor-row"><input id="editorLeftArm" type="color"><input id="editorRightArm" type="color"></div>
+    <div class="editor-row"><input id="editorLeftLeg" type="color"><input id="editorRightLeg" type="color"></div>
+  </div>
+  <div class="editor-section">
+    <button class="ui-button primary" id="editorApply">Apply Changes</button>
+  </div>
+</div>
+
+
+<div class="controls-panel" id="controlsPanel">
+  <button class="editor-close" id="controlsClose">×</button>
+  <div class="editor-title">Controls</div>
+  <div class="editor-subtitle">Desktop controls for Noob Sandbox</div>
+  <div class="controls-list">
+    <div><b>W A S D</b><span>Move the player</span></div>
+    <div><b>SPACE</b><span>Jump</span></div>
+    <div><b>SHIFT</b><span>Run</span></div>
+    <div><b>LEFT CLICK</b><span>Grab, drag, use tools, or select objects</span></div>
+    <div><b>DRAG + RELEASE</b><span>Throw grabbed objects</span></div>
+    <div><b>CLICK HELD TOOL</b><span>Unequip the equipped tool</span></div>
+  </div>
+</div>
+
+<div class="mobile-controls">
+
+  <div class="joystick" id="joystick">
+    <div class="joystick-knob" id="joystickKnob"></div>
+  </div>
+
+  <div class="mobile-actions">
+
+    <button class="mobile-action" id="mobileJump">
+      JUMP
+    </button>
+
+    <button class="mobile-action" id="mobileRun">
+      RUN
+    </button>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+let DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  canvas.width = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+const WORLD = {
+  gravity: 1850,
+  floorHeight: 38,
+  wallBounce: .38,
+  collisionBounce: .18,
+  playerAcceleration: 3600,
+  playerGroundFriction: 8,
+  playerAirFriction: 1.2,
+  objectGroundFriction: 22,
+  objectAirFriction: .15,
+  objectBounce: .30,
+  maxObjectSpeed: 2200,
+  maxObjects: 100
+};
+
+const SETTINGS = {
+  walkSpeed: 420,
+  jumpPower: 720,
+  runningEnabled: true,
+  runSpeed: 700,
+  godMode: false,
+
+  colors: {
+    head: "#F5CD30",
+    torso: "#0D69AC",
+    leftArm: "#F5CD30",
+    rightArm: "#F5CD30",
+    leftLeg: "#A4BD47",
+    rightLeg: "#A4BD47"
+  }
+};
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function damp(value, amount, dt) {
+  return value * Math.exp(-amount * dt);
+}
+
+/* =========================
+   KEYBOARD
+========================= */
+
+const keys = new Set();
+
+window.addEventListener("keydown", e => {
+
+  keys.add(e.key.toLowerCase());
+
+  if (
+    [" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(
+      e.key.toLowerCase()
+    )
+  ) {
+    e.preventDefault();
+  }
+
+  if (
+    e.key.toLowerCase() === "w" ||
+    e.key.toLowerCase() === "arrowup" ||
+    e.key === " "
+  ) {
+    if (player) {
+      player.jumpRequested = true;
+    }
+  }
+});
+
+window.addEventListener("keyup", e => {
+  keys.delete(e.key.toLowerCase());
+});
+
+function leftPressed() {
+  return keys.has("a") || keys.has("arrowleft");
+}
+
+function rightPressed() {
+  return keys.has("d") || keys.has("arrowright");
+}
+
+function runPressed() {
+  return keys.has("shift") || mobileRunning;
+}
+
+/* =========================
+   MOBILE JOYSTICK
+========================= */
+
+let joystickX = 0;
+let joystickPointer = null;
+
+const joystick = document.getElementById("joystick");
+const joystickKnob = document.getElementById("joystickKnob");
+
+function updateJoystick(clientX) {
+
+  const rect = joystick.getBoundingClientRect();
+  const center = rect.left + rect.width / 2;
+
+  let dx = clientX - center;
+  const max = rect.width * .35;
+
+  dx = clamp(dx, -max, max);
+  joystickX = dx / max;
+
+  joystickKnob.style.transform =
+    `translate(calc(-50% + ${dx}px), -50%)`;
+}
+
+joystick.addEventListener("pointerdown", e => {
+
+  joystickPointer = e.pointerId;
+  joystick.setPointerCapture(e.pointerId);
+
+  updateJoystick(e.clientX);
+});
+
+joystick.addEventListener("pointermove", e => {
+
+  if (e.pointerId !== joystickPointer) return;
+
+  updateJoystick(e.clientX);
+});
+
+function resetJoystick(e) {
+
+  if (e.pointerId !== joystickPointer) return;
+
+  joystickPointer = null;
+  joystickX = 0;
+
+  joystickKnob.style.transform =
+    "translate(-50%, -50%)";
+}
+
+joystick.addEventListener("pointerup", resetJoystick);
+joystick.addEventListener("pointercancel", resetJoystick);
+
+let mobileRunning = false;
+
+const mobileRun = document.getElementById("mobileRun");
+
+mobileRun.addEventListener("pointerdown", e => {
+
+  e.preventDefault();
+
+  mobileRunning = true;
+  mobileRun.classList.add("active");
+});
+
+function stopMobileRun() {
+
+  mobileRunning = false;
+  mobileRun.classList.remove("active");
+}
+
+mobileRun.addEventListener("pointerup", stopMobileRun);
+mobileRun.addEventListener("pointercancel", stopMobileRun);
+mobileRun.addEventListener("pointerleave", stopMobileRun);
+
+/* =========================
+   PLAYER
+========================= */
+
+const PLAYER_WIDTH = 42;
+const PLAYER_HEIGHT = 76;
+
+let player = null;
+let playerRespawnToken = 0;
+
+function createPlayer(x, y) {
+
+  return {
+    type: "player",
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    width: PLAYER_WIDTH,
+    height: PLAYER_HEIGHT,
+    grounded: false,
+    jumpRequested: false,
+    facing: 1,
+    running: false,
+
+    health: 100,
+    maxHealth: 100,
+    behavior: "passive",
+    npcGod: false,
+    npcMovement: true,
+    npcAttackCooldown: 0,
+
+    respawning: false,
+    name: "You",
+
+    removedParts: {
+      head: false,
+      torso: false,
+      leftArm: false,
+      rightArm: false,
+      leftLeg: false,
+      rightLeg: false
+    },
+
+    colors: { ...SETTINGS.colors },
+    behavior: "passive",
+    npcMovement: true,
+    npcGod: false
+  };
+}
+
+function spawnPlayer() {
+
+  if (player) {
+    showToast("Character already exists");
+    return;
+  }
+
+  playerRespawnToken++;
+
+  unequipTools();
+
+  player =
+    createPlayer(
+      W / 2,
+      120
+    );
+
+  updateStatus();
+  updateLeaderboard();
+
+  showToast("Character spawned!");
+}
+
+function deletePlayer() {
+
+  if (!player) {
+    showToast("No character found");
+    return;
+  }
+
+  playerRespawnToken++;
+
+  player = null;
+  unequipTools();
+
+  updateStatus();
+  updateLeaderboard();
+
+  showToast("Character deleted!");
+}
+
+function resetPlayer() {
+
+  if (!player) {
+    showToast("No character found");
+    return;
+  }
+
+  playerRespawnToken++;
+
+  player =
+    createPlayer(
+      W / 2,
+      120
+    );
+
+  updateStatus();
+  updateLeaderboard();
+
+  showToast("Character reset!");
+}
+
+/* =========================
+   OBJECTS
+========================= */
+
+const objects = [];
+const explosionEffects = [];
+
+function createNoobObject(x, y) {
+
+  return {
+    type: "noob",
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    rotation: 0,
+    vr: 0,
+    width: 42,
+    height: 76,
+    grabbed: false,
+    name: "Noob",
+    npcMovement: false,
+    npcSpeed: 720,
+    npcAttackCooldown: 0,
+    health: 100,
+    maxHealth: 100,
+
+    removedParts: {
+      head: false,
+      torso: false,
+      leftArm: false,
+      rightArm: false,
+      leftLeg: false,
+      rightLeg: false
+    },
+
+    colors: {
+      ...SETTINGS.colors
+    }
+  };
+}
+
+function spawnObject(type, x, y) {
+
+  if (objects.length >= WORLD.maxObjects) {
+    objects.shift();
+  }
+
+  if (type === "noob") {
+
+    objects.push(
+      createNoobObject(x, y)
+    );
+
+    updateLeaderboard();
+    return;
+  }
+
+  if (type === "bomb") {
+
+    objects.push({
+      type: "bomb",
+      x,
+      y,
+      vx: 0,
+      vy: 0,
+      rotation: 0,
+      vr: 0,
+      width: 34,
+      height: 34,
+      grabbed: false,
+      name: "Bomb",
+      igniteTimer: 0,
+      explosionTimer: 0,
+      exploded: false
+    });
+
+    updateLeaderboard();
+    return;
+  }
+
+  if (type === "ball") {
+    objects.push({ type:"ball", x, y, vx:0, vy:0, rotation:0, vr:0, width:32, height:32, grabbed:false, name:"Ball" });
+    updateLeaderboard(); return;
+  }
+
+  if (type === "rocket") {
+    objects.push({ type:"rocket", x, y, vx:720, vy:-120, rotation:0, vr:0, width:18, height:38, grabbed:false, name:"Rocket", life:6 });
+    updateLeaderboard(); return;
+  }
+
+  if (type === "boom") {
+    objects.push({ type:"boom", x, y, vx:0, vy:0, rotation:0, vr:0, width:54, height:54, grabbed:false, name:"Boom Block", explosionTimer:0, exploded:false });
+    updateLeaderboard(); return;
+  }
+
+  if (type === "crate") {
+    objects.push({
+      type: "crate",
+      x, y: y - 4, vx: 0, vy: 0, rotation: 0, vr: 0,
+      width: 58, height: 58, grabbed: false,
+      name: "Crate",
+      density: 1
+    });
+    updateLeaderboard();
+    return;
+  }
+}
+
+function spawnNoob() {
+  spawnObject("noob", W / 2, 120);
+  showToast("Noob spawned!");
+}
+
+function spawnCrate() {
+  spawnObject("crate", W / 2, 120);
+  showToast("Crate spawned!");
+}
+
+function spawnBomb() {
+  spawnObject("bomb", W / 2, 120);
+  showToast("Bomb spawned!");
+}
+
+function spawnBall() { spawnObject("ball", W / 2, 120); showToast("Ball spawned!"); }
+function spawnRocket() {
+  if (toolMode === "rocket" && heldTool === "rocket") {
+    unequipTools();
+    
+    return;
+  }
+  toolMode = "rocket";
+  heldTool = "rocket";
+}
+function spawnBoom() {
+  if (toolMode === "boom-tool" && heldTool === "boom") {
+    unequipTools();
+    
+    return;
+  }
+  heldTool = "boom";
+  toolMode = "boom-tool";
+  showToast("Boom Block equipped!");
+}
+
+function unequipTools() {
+  toolMode = null;
+  heldTool = null;
+}
+
+function resetSandbox() {
+
+  playerRespawnToken++;
+
+  player = null;
+  objects.length = 0;
+
+  unequipTools();
+
+  partRemoverButton.textContent =
+    "✂️ Part Remover";
+
+  updateStatus();
+  updateLeaderboard();
+
+  showToast("Sandbox reset!");
+}
+
+/* =========================
+   BODY PART DATA
+========================= */
+
+function getBodyParts(character) {
+
+  return [
+    {
+      name: "head",
+      color: character.colors.head,
+      x: character.x,
+      y: character.y - 40,
+      localX: -20,
+      localY: -60,
+      w: 40,
+      h: 40
+    },
+
+    {
+      name: "torso",
+      color: character.colors.torso,
+      x: character.x,
+      y: character.y,
+      localX: -22,
+      localY: -20,
+      w: 44,
+      h: 40
+    },
+
+    {
+      name: "leftArm",
+      color: character.colors.leftArm,
+      x: character.x - 32,
+      y: character.y + 2,
+      localX: -40,
+      localY: -18,
+      w: 15,
+      h: 40
+    },
+
+    {
+      name: "rightArm",
+      color: character.colors.rightArm,
+      x: character.x + 32,
+      y: character.y + 2,
+      localX: 25,
+      localY: -18,
+      w: 15,
+      h: 40
+    },
+
+    {
+      name: "leftLeg",
+      color: character.colors.leftLeg,
+      x: character.x - 12,
+      y: character.y + 38,
+      localX: -20,
+      localY: 18,
+      w: 16,
+      h: 39
+    },
+
+    {
+      name: "rightLeg",
+      color: character.colors.rightLeg,
+      x: character.x + 12,
+      y: character.y + 38,
+      localX: 4,
+      localY: 18,
+      w: 16,
+      h: 39
+    }
+  ];
+}
+
+function getNoobParts(noob) {
+  return getBodyParts(noob);
+}
+
+/* =========================
+   PART REMOVER
+========================= */
+
+let toolMode = null;
+let heldTool = null;
+
+const partRemoverButton =
+  document.getElementById("partRemover");
+
+function pointInsideRect(x, y, rect) {
+
+  return (
+    x >= rect.localX &&
+    x <= rect.localX + rect.w &&
+    y >= rect.localY &&
+    y <= rect.localY + rect.h
+  );
+}
+
+function findBodyPartAt(character, x, y) {
+
+  if (
+    !character ||
+    character.respawning
+  ) {
+    return null;
+  }
+
+  const localX =
+    x - character.x;
+
+  const localY =
+    y - character.y;
+
+  const parts =
+    getBodyParts(character);
+
+  const ordered = [
+    "head",
+    "leftArm",
+    "rightArm",
+    "torso",
+    "leftLeg",
+    "rightLeg"
+  ];
+
+  for (const partName of ordered) {
+
+    if (
+      character.removedParts &&
+      character.removedParts[partName]
+    ) {
+      continue;
+    }
+
+    const part =
+      parts.find(
+        p => p.name === partName
+      );
+
+    if (
+      part &&
+      pointInsideRect(
+        localX,
+        localY,
+        part
+      )
+    ) {
+      return {
+        character,
+        part
+      };
+    }
+  }
+
+  return null;
+}
+
+function findNoobPartAt(x, y) {
+
+  for (
+    let i = objects.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    const noob = objects[i];
+
+    if (
+      noob.type !== "noob" ||
+      noob.health <= 0
+    ) {
+      continue;
+    }
+
+    const result =
+      findBodyPartAt(
+        noob,
+        x,
+        y
+      );
+
+    if (result) {
+      return {
+        noob,
+        part: result.part
+      };
+    }
+  }
+
+  return null;
+}
+
+function addBrokenPart(part) {
+
+  objects.push({
+    type: "brokenPart",
+    x: part.x,
+    y: part.y,
+    vx: (Math.random() - .5) * 700,
+    vy: -220 - Math.random() * 360,
+    rotation: (Math.random() - .5) * .5,
+    vr: (Math.random() - .5) * 12,
+    width: part.w,
+    height: part.h,
+    color: part.color,
+    life: 2.2,
+    grabbed: false,
+    name: ""
+  });
+}
+
+function removeNoobPart(noob, part) {
+
+  if (
+    !noob ||
+    !part ||
+    noob.removedParts[part.name]
+  ) {
+    return;
+  }
+
+  noob.removedParts[part.name] = true;
+
+  addBrokenPart(part);
+
+  showToast(
+    `${formatPartName(part.name)} removed`
+  );
+
+  if (
+    part.name === "head" ||
+    part.name === "torso"
+  ) {
+    noob.health = 0;
+    destroyNoob(noob);
+  }
+
+  updateLeaderboard();
+}
+
+function removePlayerPart(part) {
+
+  if (
+    !player ||
+    player.respawning ||
+    !part
+  ) {
+    return;
+  }
+
+  /*
+    God Mode completely protects the player's
+    body from the Part Remover.
+  */
+
+  if (SETTINGS.godMode) {
+    showToast("God Mode protected your character");
+    return;
+  }
+
+  if (
+    player.removedParts[part.name]
+  ) {
+    return;
+  }
+
+  player.removedParts[part.name] = true;
+
+  addBrokenPart(part);
+
+  if (
+    part.name === "head" ||
+    part.name === "torso"
+  ) {
+
+    player.health = 0;
+
+    showToast(
+      `${formatPartName(part.name)} removed — you died`
+    );
+
+    respawnPlayerSilently();
+    return;
+  }
+
+  showToast(
+    `${formatPartName(part.name)} removed`
+  );
+
+  updateLeaderboard();
+}
+
+function formatPartName(name) {
+
+  if (name === "leftArm") {
+    return "Left arm";
+  }
+
+  if (name === "rightArm") {
+    return "Right arm";
+  }
+
+  if (name === "leftLeg") {
+    return "Left leg";
+  }
+
+  if (name === "rightLeg") {
+    return "Right leg";
+  }
+
+  return (
+    name.charAt(0).toUpperCase() +
+    name.slice(1)
+  );
+}
+
+function togglePartRemover() {
+
+  if (toolMode === "part-remover") {
+
+    toolMode = null;
+
+    partRemoverButton.textContent =
+      "✂️ Part Remover";
+
+    showToast("Part Remover disabled");
+
+  } else {
+
+    toolMode = "part-remover";
+
+    partRemoverButton.textContent =
+      "✂️ Part Remover: ON";
+
+    showToast(
+      "Click a body part to remove it"
+    );
+  }
+}
+
+/* =========================
+   LEGO DESTRUCTION
+========================= */
+
+function createBrokenNoobParts(c) {
+
+  const parts =
+    getNoobParts(c);
+
+  for (const part of parts) {
+
+    if (c.removedParts[part.name]) {
+      continue;
+    }
+
+    addBrokenPart(part);
+  }
+}
+
+function destroyNoob(noob) {
+
+  if (!noob) {
+    return;
+  }
+
+  createBrokenNoobParts(noob);
+
+  const index =
+    objects.indexOf(noob);
+
+  if (index !== -1) {
+    objects.splice(index, 1);
+  }
+
+  updateLeaderboard();
+}
+
+/* =========================
+   HEALTH / BOMBS
+========================= */
+
+function damageNoob(
+  noob,
+  amount,
+  forceX = 0,
+  forceY = 0
+) {
+
+  if (!noob || noob.health <= 0 || noob.npcGod) {
+    return;
+  }
+
+  noob.health = clamp(
+    noob.health - amount,
+    0,
+    noob.maxHealth
+  );
+
+  noob.vx += forceX;
+  noob.vy += forceY;
+
+  updateLeaderboard();
+
+  if (noob.health <= 0) {
+    destroyNoob(noob);
+  }
+}
+
+function explodeBomb(bomb) {
+
+  if (bomb.exploded) {
+    return;
+  }
+
+  bomb.exploded = true;
+  bomb.explosionTimer = .28;
+
+  const radius = 155;
+
+  if (player) {
+
+    const dx =
+      player.x - bomb.x;
+
+    const dy =
+      player.y - bomb.y;
+
+    const distance =
+      Math.hypot(dx, dy);
+
+    if (distance < radius) {
+
+      const strength =
+        1 - distance / radius;
+
+      const damage =
+        18 + strength * 82;
+
+      const safeDistance =
+        Math.max(distance, 1);
+
+      const force =
+        strength * 1050;
+
+      damagePlayer(
+        damage,
+        dx / safeDistance * force,
+        dy / safeDistance * force - 280
+      );
+    }
+  }
+
+  for (const obj of [...objects]) {
+
+    if (
+      obj === bomb ||
+      obj.exploded ||
+      obj.type === "brokenPart"
+    ) {
+      continue;
+    }
+
+    const dx =
+      obj.x - bomb.x;
+
+    const dy =
+      obj.y - bomb.y;
+
+    const distance =
+      Math.hypot(dx, dy);
+
+    if (
+      distance < radius &&
+      distance > 0
+    ) {
+
+      const strength =
+        1 - distance / radius;
+
+      const force =
+        strength * 1250;
+
+      if (obj.type === "noob") {
+
+        damageNoob(
+          obj,
+          18 + strength * 82,
+          dx / distance * force,
+          dy / distance * force -
+            strength * 300
+        );
+
+      } else {
+
+        obj.vx +=
+          dx / distance * force;
+
+        obj.vy +=
+          dy / distance * force -
+          strength * 300;
+
+        obj.vr +=
+          (Math.random() - .5) * 22;
+      }
+    }
+  }
+}
+
+function updateBomb(bomb, dt) {
+
+  if (bomb.exploded) {
+    bomb.explosionTimer -= dt;
+    return;
+  }
+
+  if (bomb.igniteTimer > 0) {
+    bomb.igniteTimer -= dt;
+    if (bomb.igniteTimer <= 0) explodeBomb(bomb);
+  }
+}
+
+function igniteBomb(bomb) {
+  if (!bomb || bomb.exploded) return false;
+  if (bomb.igniteTimer > 0) return true;
+  bomb.igniteTimer = 2;
+  return true;
+}
+
+function damagePlayer(
+  amount,
+  forceX = 0,
+  forceY = 0
+) {
+
+  if (
+    !player ||
+    player.respawning
+  ) {
+    return;
+  }
+
+  /*
+    God Mode means the player's health,
+    death state, and damage are protected.
+    The force is also ignored so explosions
+    cannot launch the player around.
+  */
+
+  if (SETTINGS.godMode) {
+    return;
+  }
+
+  player.health = clamp(
+    player.health - amount,
+    0,
+    player.maxHealth
+  );
+
+  player.vx += forceX;
+  player.vy += forceY;
+
+  updateLeaderboard();
+
+  if (player.health <= 0) {
+    respawnPlayerSilently();
+  }
+}
+
+function respawnPlayerSilently() {
+
+  if (
+    !player ||
+    player.respawning
+  ) {
+    return;
+  }
+
+  if (SETTINGS.godMode) {
+    player.health =
+      player.maxHealth;
+
+    updateLeaderboard();
+
+    return;
+  }
+
+  player.respawning = true;
+
+  const token =
+    ++playerRespawnToken;
+
+  const oldPlayer =
+    player;
+
+  setTimeout(() => {
+
+    /*
+      Prevent an old respawn timer from
+      recreating a character after the user
+      deleted/reset the current one.
+    */
+
+    if (
+      token !== playerRespawnToken ||
+      player !== oldPlayer
+    ) {
+      return;
+    }
+
+    player =
+      createPlayer(
+        W / 2,
+        120
+      );
+
+    updateStatus();
+    updateLeaderboard();
+
+  }, 450);
+}
+
+/* =========================
+   PLAYER PHYSICS
+========================= */
+
+function updatePlayer(dt) {
+
+  if (!player || player.respawning) {
+    return;
+  }
+
+  /*
+    Keep God Mode health fully restored.
+    This also protects against accidental
+    health changes from future systems.
+  */
+
+  if (SETTINGS.godMode) {
+    player.health =
+      player.maxHealth;
+  }
+
+  let direction = 0;
+
+  if (leftPressed()) direction -= 1;
+  if (rightPressed()) direction += 1;
+
+  if (Math.abs(joystickX) > .05) {
+    direction = joystickX;
+  }
+
+  const isRunning =
+    SETTINGS.runningEnabled &&
+    runPressed();
+
+  player.running = isRunning;
+
+  const targetSpeed =
+    isRunning
+      ? SETTINGS.runSpeed
+      : SETTINGS.walkSpeed;
+
+  if (Math.abs(direction) > .04) {
+
+    player.vx +=
+      direction *
+      WORLD.playerAcceleration *
+      dt;
+
+    player.facing =
+      direction > 0 ? 1 : -1;
+
+  } else {
+
+    const friction =
+      player.grounded
+        ? WORLD.playerGroundFriction
+        : WORLD.playerAirFriction;
+
+    player.vx =
+      damp(
+        player.vx,
+        friction,
+        dt
+      );
+  }
+
+  player.vx =
+    clamp(
+      player.vx,
+      -targetSpeed,
+      targetSpeed
+    );
+
+  if (
+    Math.abs(player.vx) < 5 &&
+    player.grounded
+  ) {
+    player.vx = 0;
+  }
+
+  if (
+    player.jumpRequested &&
+    player.grounded
+  ) {
+
+    player.vy =
+      -SETTINGS.jumpPower;
+
+    player.grounded = false;
+  }
+
+  player.jumpRequested = false;
+
+  player.vy +=
+    WORLD.gravity * dt;
+
+  player.x +=
+    player.vx * dt;
+
+  player.y +=
+    player.vy * dt;
+
+  const halfW =
+    player.width / 2;
+
+  const halfH =
+    player.height / 2;
+
+  if (player.x - halfW < 0) {
+
+    player.x = halfW;
+
+    if (player.vx < 0) {
+      player.vx *=
+        -WORLD.wallBounce;
+    }
+  }
+
+  if (player.x + halfW > W) {
+
+    player.x =
+      W - halfW;
+
+    if (player.vx > 0) {
+      player.vx *=
+        -WORLD.wallBounce;
+    }
+  }
+
+  const floor =
+    H - WORLD.floorHeight;
+
+  if (player.y + halfH >= floor) {
+
+    player.y =
+      floor - halfH;
+
+    if (player.vy > 0) {
+      player.vy *= -.18;
+    }
+
+    if (Math.abs(player.vy) < 35) {
+      player.vy = 0;
+    }
+
+    player.grounded = true;
+
+  } else {
+
+    player.grounded = false;
+  }
+}
+
+/* =========================
+   OBJECT PHYSICS
+========================= */
+
+function createExplosionEffect(x, y, radius=120, kind="explosion") {
+  explosionEffects.push({
+    x, y, radius, kind, age: 0, duration: .34,
+    particles: Array.from({length: 22}, () => {
+      const a = Math.random() * Math.PI * 2;
+      const speed = 180 + Math.random() * 520;
+      return {
+        x, y,
+        vx: Math.cos(a) * speed,
+        vy: Math.sin(a) * speed,
+        size: 2 + Math.random() * 5,
+        life: .22 + Math.random() * .28
+      };
+    })
+  });
+}
+
+function updateExplosionEffects(dt) {
+  for (let i = explosionEffects.length - 1; i >= 0; i--) {
+    const fx = explosionEffects[i];
+    fx.age += dt;
+    for (const p of fx.particles) {
+      p.life -= dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= Math.pow(.08, dt);
+      p.vy = p.vy * Math.pow(.08, dt) + 620 * dt;
+    }
+    if (fx.age >= fx.duration) explosionEffects.splice(i, 1);
+  }
+}
+
+function drawExplosionEffects() {
+  for (const fx of explosionEffects) {
+    const t = clamp(fx.age / fx.duration, 0, 1);
+    const alpha = 1 - t;
+    const isMuzzle = fx.kind === "muzzle";
+    const ring = isMuzzle ? 8 + t * 30 : 18 + t * fx.radius;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    ctx.fillStyle = isMuzzle
+      ? "rgba(255,235,120,.65)"
+      : "rgba(255,190,35,.22)";
+    ctx.beginPath();
+    ctx.arc(fx.x, fx.y, ring * (isMuzzle ? .7 : .55), 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = isMuzzle
+      ? "rgba(255,245,170,.95)"
+      : "rgba(255,220,90,.95)";
+    ctx.lineWidth = isMuzzle ? 5 - t * 3 : 7 - t * 4;
+    ctx.beginPath();
+    ctx.arc(fx.x, fx.y, ring, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255,245,170,.95)";
+    for (const p of fx.particles) {
+      if (p.life <= 0) continue;
+      ctx.globalAlpha = Math.min(alpha, p.life / .18);
+      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    }
+    ctx.restore();
+  }
+}
+
+function explodeToolObject(obj, radius=120, damage=35) {
+  if (!obj) return;
+  if (obj.type === "boom") {
+    if (obj.explosionTimer > 0) return;
+  } else if (obj.exploded) {
+    return;
+  }
+
+  if (obj.type !== "boom") obj.exploded = true;
+  obj.explosionTimer = .34;
+  obj.vx = 0;
+  obj.vy = 0;
+  obj.vr = 0;
+
+  const cx = obj.x;
+  const cy = obj.y;
+  createExplosionEffect(cx, cy, radius);
+
+  if (player && !player.respawning) {
+    const dx = player.x - cx;
+    const dy = player.y - cy;
+    const d = Math.hypot(dx, dy);
+    if (d < radius) {
+      const f = 1 - d / radius;
+      const safe = Math.max(d, 1);
+      damagePlayer(
+        damage * f,
+        dx / safe * 900 * f,
+        dy / safe * 900 * f - 300 * f
+      );
+    }
+  }
+
+  for (const o of [...objects]) {
+    if (o === obj || o.type === "brokenPart" || o.exploded || (o.type === "boom" && o.explosionTimer > 0)) continue;
+
+    const dx = o.x - cx;
+    const dy = o.y - cy;
+    const d = Math.hypot(dx, dy);
+    if (d >= radius) continue;
+
+    const f = 1 - d / radius;
+    const safe = Math.max(d, 1);
+    const force = 1100 * f;
+
+    if (o.type === "noob") {
+      damageNoob(o, damage * f, dx / safe * force, dy / safe * force - 320 * f);
+    } else {
+      o.vx += dx / safe * force;
+      o.vy += dy / safe * force - 320 * f;
+      o.vr += (Math.random() - .5) * 28;
+    }
+  }
+
+  if (obj.type === "rocket") {
+    const index = objects.indexOf(obj);
+    if (index !== -1) objects.splice(index, 1);
+  }
+}
+
+
+function updateObject(obj, dt) {
+
+  if (sandboxFrozen) return;
+
+  if (obj.type === "noob" && npcMovementEnabled && obj.npcMovement && !obj.grabbed) {
+    const target = player && !player.respawning ? player : null;
+    if (target && obj.behavior !== "passive") {
+      const dx = target.x - obj.x;
+      const distance = Math.abs(dx);
+      if (obj.behavior === "follow" || (obj.behavior === "attack" && distance > 62)) {
+        const npcSpeed = obj.npcSpeed || 720;
+        obj.vx += Math.sign(dx) * 1500 * dt;
+        obj.vx = clamp(obj.vx, -npcSpeed, npcSpeed);
+      }
+      if (obj.behavior === "attack" && npcAttacksEnabled && distance < 78) {
+        obj.npcAttackCooldown -= dt;
+        if (obj.npcAttackCooldown <= 0 && !obj.npcGod) {
+          damagePlayer(10, Math.sign(dx) * 180, -140);
+          obj.npcAttackCooldown = 0.65;
+        }
+      }
+    }
+  }
+
+  if (obj.type === "rocket") {
+    obj.life -= dt;
+    obj.rotation = Math.atan2(obj.vy, obj.vx) + Math.PI / 2;
+    if (obj.life <= 0) {
+      explodeToolObject(obj, 145, 60);
+      return;
+    }
+  }
+
+  if (obj.type === "boom" && obj.explosionTimer > 0) {
+    obj.explosionTimer -= dt;
+    if (obj.explosionTimer <= 0) {
+      obj.explosionTimer = 0;
+      obj.exploded = false;
+    }
+    return;
+  }
+
+  if (obj.type === "bomb") {
+    updateBomb(obj, dt);
+  }
+
+  if (obj.type === "brokenPart") {
+    if (obj.life !== Infinity) {
+      obj.life -= dt;
+    }
+  }
+
+  if (obj.grabbed) {
+    return;
+  }
+
+  if (
+    obj.type === "bomb" &&
+    obj.exploded
+  ) {
+    return;
+  }
+
+  obj.vy +=
+    WORLD.gravity * dt;
+
+  obj.x +=
+    obj.vx * dt;
+
+  obj.y +=
+    obj.vy * dt;
+
+  obj.rotation +=
+    obj.vr * dt;
+
+  const halfW =
+    obj.width / 2;
+
+  const halfH =
+    obj.height / 2;
+
+  if (obj.x - halfW < 0) {
+
+    obj.x = halfW;
+
+    if (obj.vx < 0) {
+      obj.vx *=
+        -WORLD.wallBounce;
+    }
+  }
+
+  if (obj.x + halfW > W) {
+
+    obj.x =
+      W - halfW;
+
+    if (obj.vx > 0) {
+      obj.vx *=
+        -WORLD.wallBounce;
+    }
+  }
+
+  const floor =
+    H - WORLD.floorHeight;
+
+  const onGround =
+    obj.y + halfH >= floor;
+
+  if (onGround) {
+
+    obj.y =
+      floor - halfH;
+
+    if (obj.type === "rocket") {
+      explodeToolObject(obj, 145, 60);
+      return;
+    }
+
+    if (obj.vy > 0) {
+      obj.vy *=
+        -WORLD.objectBounce;
+    }
+
+    if (Math.abs(obj.vy) < 35) {
+      obj.vy = 0;
+    }
+
+    obj.vx =
+      damp(
+        obj.vx,
+        WORLD.objectGroundFriction,
+        dt
+      );
+
+    obj.vr =
+      damp(
+        obj.vr,
+        17,
+        dt
+      );
+
+    if (Math.abs(obj.vx) < 8) {
+      obj.vx = 0;
+    }
+
+    if (Math.abs(obj.vr) < .15) {
+      obj.vr = 0;
+    }
+
+  } else {
+
+    obj.vx =
+      damp(
+        obj.vx,
+        WORLD.objectAirFriction,
+        dt
+      );
+  }
+
+  obj.vx =
+    clamp(
+      obj.vx,
+      -WORLD.maxObjectSpeed,
+      WORLD.maxObjectSpeed
+    );
+}
+
+/* =========================
+   COLLISIONS
+========================= */
+
+function overlap(a, b) {
+
+  return (
+    Math.abs(a.x - b.x) <
+      (a.width + b.width) / 2 &&
+    Math.abs(a.y - b.y) <
+      (a.height + b.height) / 2
+  );
+}
+
+function collidePlayerObject(p, o) {
+
+  if (o.type === "rocket" && !o.exploded && o.explosionTimer <= 0 && overlap(p, o)) {
+    explodeToolObject(o, 145, 60);
+    return;
+  }
+
+  if (
+    o.grabbed ||
+    o.exploded ||
+    o.type === "brokenPart" ||
+    !overlap(p, o)
+  ) {
+    return;
+  }
+
+  const dx =
+    p.x - o.x;
+
+  const dy =
+    p.y - o.y;
+
+  const ox =
+    (p.width + o.width) / 2 -
+    Math.abs(dx);
+
+  const oy =
+    (p.height + o.height) / 2 -
+    Math.abs(dy);
+
+  if (ox <= 0 || oy <= 0) {
+    return;
+  }
+
+  if (ox < oy) {
+
+    const dir =
+      dx >= 0 ? 1 : -1;
+
+    p.x +=
+      dir * ox * .5;
+
+    o.x -=
+      dir * ox * .5;
+
+    const average =
+      (p.vx + o.vx) / 2;
+
+    p.vx =
+      average +
+      dir *
+      Math.abs(
+        p.vx - average
+      ) *
+      WORLD.collisionBounce;
+
+    o.vx =
+      average -
+      dir *
+      Math.abs(
+        o.vx - average
+      ) *
+      WORLD.collisionBounce;
+
+  } else {
+
+    const dir =
+      dy >= 0 ? 1 : -1;
+
+    p.y +=
+      dir * oy * .5;
+
+    o.y -=
+      dir * oy * .5;
+
+    const average =
+      (p.vy + o.vy) / 2;
+
+    p.vy =
+      average +
+      dir *
+      Math.abs(
+        p.vy - average
+      ) *
+      WORLD.collisionBounce;
+
+    o.vy =
+      average -
+      dir *
+      Math.abs(
+        o.vy - average
+      ) *
+      WORLD.collisionBounce;
+  }
+}
+
+function collideObjects(a, b) {
+
+  if (a.type === "rocket" && !a.exploded && overlap(a, b) && b.type !== "brokenPart") {
+    explodeToolObject(a, 145, 60);
+    return;
+  }
+  if (b.type === "rocket" && !b.exploded && overlap(a, b) && a.type !== "brokenPart") {
+    explodeToolObject(b, 145, 60);
+    return;
+  }
+
+  if (
+    a.grabbed ||
+    b.grabbed ||
+    a.exploded ||
+    b.exploded ||
+    a.type === "brokenPart" ||
+    b.type === "brokenPart" ||
+    !overlap(a, b)
+  ) {
+    return;
+  }
+
+  const dx =
+    a.x - b.x;
+
+  const dy =
+    a.y - b.y;
+
+  const ox =
+    (a.width + b.width) / 2 -
+    Math.abs(dx);
+
+  const oy =
+    (a.height + b.height) / 2 -
+    Math.abs(dy);
+
+  if (ox <= 0 || oy <= 0) {
+    return;
+  }
+
+  if (ox < oy) {
+
+    const dir =
+      dx >= 0 ? 1 : -1;
+
+    a.x +=
+      dir * ox * .5;
+
+    b.x -=
+      dir * ox * .5;
+
+    const average =
+      (a.vx + b.vx) / 2;
+
+    a.vx =
+      average +
+      dir *
+      Math.abs(
+        a.vx - average
+      ) *
+      WORLD.collisionBounce;
+
+    b.vx =
+      average -
+      dir *
+      Math.abs(
+        b.vx - average
+      ) *
+      WORLD.collisionBounce;
+
+  } else {
+
+    const dir =
+      dy >= 0 ? 1 : -1;
+
+    a.y +=
+      dir * oy * .5;
+
+    b.y -=
+      dir * oy * .5;
+
+    const average =
+      (a.vy + b.vy) / 2;
+
+    a.vy =
+      average +
+      dir *
+      Math.abs(
+        a.vy - average
+      ) *
+      WORLD.collisionBounce;
+
+    b.vy =
+      average -
+      dir *
+      Math.abs(
+        b.vy - average
+      ) *
+      WORLD.collisionBounce;
+  }
+}
+
+function solveCollisions() {
+
+  if (player) {
+
+    for (const obj of objects) {
+      collidePlayerObject(
+        player,
+        obj
+      );
+    }
+  }
+
+  for (
+    let i = 0;
+    i < objects.length;
+    i++
+  ) {
+
+    for (
+      let j = i + 1;
+      j < objects.length;
+      j++
+    ) {
+
+      collideObjects(
+        objects[i],
+        objects[j]
+      );
+    }
+  }
+}
+
+/* =========================
+   DRAWING
+========================= */
+
+function roundedRect(
+  x,
+  y,
+  w,
+  h,
+  r
+) {
+
+  const radius =
+    Math.min(
+      r,
+      w / 2,
+      h / 2
+    );
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x + radius,
+    y
+  );
+
+  ctx.arcTo(
+    x + w,
+    y,
+    x + w,
+    y + h,
+    radius
+  );
+
+  ctx.arcTo(
+    x + w,
+    y + h,
+    x,
+    y + h,
+    radius
+  );
+
+  ctx.arcTo(
+    x,
+    y + h,
+    x,
+    y,
+    radius
+  );
+
+  ctx.arcTo(
+    x,
+    y,
+    x + w,
+    y,
+    radius
+  );
+
+  ctx.closePath();
+}
+
+function drawTexturedBlock(
+  x,
+  y,
+  w,
+  h,
+  color,
+  radius
+) {
+
+  ctx.fillStyle = color;
+
+  roundedRect(
+    x,
+    y,
+    w,
+    h,
+    radius
+  );
+
+  ctx.fill();
+
+  ctx.strokeStyle =
+    "rgba(0,0,0,.32)";
+
+  ctx.lineWidth = 1.5;
+
+  ctx.stroke();
+
+  const gradient =
+    ctx.createLinearGradient(
+      0,
+      y,
+      0,
+      y + h
+    );
+
+  gradient.addColorStop(
+    0,
+    "rgba(255,255,255,.20)"
+  );
+
+  gradient.addColorStop(
+    .25,
+    "rgba(255,255,255,.05)"
+  );
+
+  gradient.addColorStop(
+    1,
+    "rgba(0,0,0,.13)"
+  );
+
+  ctx.fillStyle = gradient;
+
+  roundedRect(
+    x + 1,
+    y + 1,
+    w - 2,
+    h - 2,
+    Math.max(1, radius - 1)
+  );
+
+  ctx.fill();
+
+  ctx.save();
+
+  roundedRect(
+    x + 1,
+    y + 1,
+    w - 2,
+    h - 2,
+    Math.max(1, radius - 1)
+  );
+
+  ctx.clip();
+
+  ctx.fillStyle =
+    "rgba(255,255,255,.045)";
+
+  for (
+    let px = x + 4;
+    px < x + w;
+    px += 7
+  ) {
+
+    for (
+      let py = y + 4;
+      py < y + h;
+      py += 7
+    ) {
+
+      ctx.fillRect(
+        px,
+        py,
+        1,
+        1
+      );
+    }
+  }
+
+  ctx.restore();
+
+  ctx.fillStyle =
+    "rgba(255,255,255,.10)";
+
+  ctx.fillRect(
+    x + 1,
+    y + 3,
+    1,
+    Math.max(2, h - 6)
+  );
+
+  ctx.fillStyle =
+    "rgba(0,0,0,.13)";
+
+  ctx.fillRect(
+    x + 3,
+    y + h - 2,
+    Math.max(2, w - 6),
+    1
+  );
+}
+
+/* =========================
+   NAME LABEL
+========================= */
+
+function drawName(
+  name,
+  x,
+  y,
+  health = null,
+  maxHealth = null,
+  godMode = false
+) {
+
+  if (!name) return;
+
+  /*
+    This function intentionally receives
+    screen-space coordinates and is always
+    called outside the player's horizontal
+    flip transform.
+
+    That means the text never mirrors when
+    the character faces left.
+  */
+
+  ctx.save();
+
+  ctx.font =
+    "bold 11px Arial";
+
+  ctx.textAlign =
+    "center";
+
+  ctx.textBaseline =
+    "middle";
+
+  const textWidth =
+    ctx.measureText(name).width;
+
+  const padding = 7;
+
+  const boxWidth =
+    textWidth + padding * 2;
+
+  const boxHeight =
+    health !== null
+      ? 24
+      : 19;
+
+  ctx.fillStyle =
+    "rgba(8,6,14,.78)";
+
+  roundedRect(
+    x - boxWidth / 2,
+    y - boxHeight / 2,
+    boxWidth,
+    boxHeight,
+    7
+  );
+
+  ctx.fill();
+
+  ctx.strokeStyle =
+    "rgba(255,255,255,.12)";
+
+  ctx.lineWidth = 1;
+
+  ctx.stroke();
+
+  ctx.fillStyle =
+    "rgba(255,255,255,.92)";
+
+  ctx.fillText(
+    name,
+    x,
+    y - (health !== null ? 2 : 0)
+  );
+
+  if (
+    health !== null &&
+    maxHealth !== null
+  ) {
+
+    const barWidth =
+      Math.max(
+        32,
+        Math.min(
+          70,
+          boxWidth
+        )
+      );
+
+    const percent =
+      clamp(
+        health / maxHealth,
+        0,
+        1
+      );
+
+    ctx.fillStyle =
+      "rgba(255,255,255,.12)";
+
+    roundedRect(
+      x - barWidth / 2,
+      y + 7,
+      barWidth,
+      3,
+      2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle =
+      godMode
+        ? "#c59a16"
+        : percent > .5
+          ? "#65d66f"
+          : percent > .25
+            ? "#f5c542"
+            : "#ef5350";
+
+    roundedRect(
+      x - barWidth / 2,
+      y + 7,
+      barWidth * percent,
+      3,
+      2
+    );
+
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+/* =========================
+   FACE
+========================= */
+
+function drawFace() {
+
+  ctx.fillStyle =
+    "#161219";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -7,
+    -46,
+    2,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  ctx.beginPath();
+
+  ctx.arc(
+    7,
+    -46,
+    2,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  ctx.strokeStyle =
+    "#161219";
+
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    -42,
+    7,
+    .15,
+    Math.PI - .15
+  );
+
+  ctx.stroke();
+
+  ctx.lineCap = "butt";
+}
+
+function drawNoob(
+  c,
+  isPlayer = false
+) {
+
+  /*
+    IMPORTANT:
+    The label is drawn BEFORE the player
+    is flipped horizontally. This keeps the
+    name and health bar facing the camera.
+  */
+
+  drawName(
+    c.name,
+    c.x,
+    c.y - 82,
+    c.health,
+    c.maxHealth,
+    isPlayer && SETTINGS.godMode
+  );
+
+  if (isPlayer) {
+
+    ctx.save();
+
+    ctx.globalAlpha = .28;
+    ctx.fillStyle = "#000";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      c.x,
+      H - WORLD.floorHeight + 1,
+      27,
+      7,
+      0,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  ctx.save();
+
+  ctx.translate(
+    c.x,
+    c.y
+  );
+
+  ctx.scale(
+    c.facing === -1
+      ? -1
+      : 1,
+    1
+  );
+
+  const removed =
+    c.removedParts || {};
+
+  if (!removed.leftLeg) {
+
+    drawTexturedBlock(
+      -20,
+      18,
+      16,
+      39,
+      c.colors.leftLeg,
+      3
+    );
+  }
+
+  if (!removed.rightLeg) {
+
+    drawTexturedBlock(
+      4,
+      18,
+      16,
+      39,
+      c.colors.rightLeg,
+      3
+    );
+  }
+
+  if (!removed.torso) {
+
+    drawTexturedBlock(
+      -22,
+      -20,
+      44,
+      40,
+      c.colors.torso,
+      3
+    );
+  }
+
+  if (!removed.leftArm) {
+
+    drawTexturedBlock(
+      -40,
+      -18,
+      15,
+      40,
+      c.colors.leftArm,
+      3
+    );
+  }
+
+  if (!removed.rightArm) {
+
+    drawTexturedBlock(
+      25,
+      -18,
+      15,
+      40,
+      c.colors.rightArm,
+      3
+    );
+  }
+
+  if (!removed.head) {
+
+    drawTexturedBlock(
+      -20,
+      -60,
+      40,
+      40,
+      c.colors.head,
+      0
+    );
+
+    drawFace();
+  }
+
+  if (
+    isPlayer &&
+    c.running &&
+    Math.abs(c.vx) > 50
+  ) {
+
+    ctx.globalAlpha = .45;
+    ctx.strokeStyle = "#e0b72b";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -30,
+      31
+    );
+
+    ctx.lineTo(
+      -39,
+      35
+    );
+
+    ctx.moveTo(
+      -28,
+      37
+    );
+
+    ctx.lineTo(
+      -37,
+      42
+    );
+
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawBrokenPart(obj) {
+
+  ctx.save();
+
+  ctx.translate(
+    obj.x,
+    obj.y
+  );
+
+  ctx.rotate(
+    obj.rotation
+  );
+
+  ctx.globalAlpha =
+    clamp(
+      obj.life / .35,
+      0,
+      1
+    );
+
+  drawTexturedBlock(
+    -obj.width / 2,
+    -obj.height / 2,
+    obj.width,
+    obj.height,
+    obj.color,
+    0
+  );
+
+  ctx.restore();
+}
+
+function drawCrate(obj) {
+
+  ctx.save();
+
+  ctx.translate(
+    obj.x,
+    obj.y
+  );
+
+  ctx.rotate(
+    obj.rotation
+  );
+
+  drawName(
+    obj.name,
+    0,
+    -obj.height / 2 - 14
+  );
+
+  drawTexturedBlock(
+    -obj.width / 2,
+    -obj.height / 2,
+    obj.width,
+    obj.height,
+    "#986733",
+    5
+  );
+
+  ctx.strokeStyle =
+    "rgba(255,230,180,.3)";
+
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    -obj.width / 2 + 5,
+    -obj.height / 2 + 5
+  );
+
+  ctx.lineTo(
+    obj.width / 2 - 5,
+    obj.height / 2 - 5
+  );
+
+  ctx.moveTo(
+    obj.width / 2 - 5,
+    -obj.height / 2 + 5
+  );
+
+  ctx.lineTo(
+    -obj.width / 2 + 5,
+    obj.height / 2 - 5
+  );
+
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawBomb(bomb) {
+
+  ctx.save();
+
+  ctx.translate(
+    bomb.x,
+    bomb.y
+  );
+
+  drawName(
+    bomb.name,
+    0,
+    -31
+  );
+
+  if (bomb.exploded) {
+
+    const progress =
+      clamp(
+        bomb.explosionTimer / .28,
+        0,
+        1
+      );
+
+    const radius =
+      20 +
+      (1 - progress) * 125;
+
+    ctx.globalAlpha =
+      progress;
+
+    ctx.fillStyle =
+      "rgba(255,180,50,.28)";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      0,
+      0,
+      radius,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.strokeStyle =
+      "rgba(255,220,120,.85)";
+
+    ctx.lineWidth = 5;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      0,
+      0,
+      radius,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+
+    return;
+  }
+
+  ctx.rotate(
+    bomb.rotation
+  );
+
+  ctx.fillStyle =
+    "#17131d";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    4,
+    15,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  ctx.strokeStyle =
+    "rgba(255,255,255,.25)";
+
+  ctx.lineWidth = 2;
+
+  ctx.stroke();
+
+  ctx.fillStyle =
+    "rgba(255,255,255,.12)";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -5,
+    -1,
+    5,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  ctx.strokeStyle =
+    "#92714c";
+
+  ctx.lineWidth = 3;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    7,
+    -9
+  );
+
+  ctx.quadraticCurveTo(
+    13,
+    -17,
+    10,
+    -22
+  );
+
+  ctx.stroke();
+
+  const spark =
+    Math.floor(
+      performance.now() / 90
+    ) % 2 === 0;
+
+  if (spark) {
+
+    ctx.fillStyle =
+      "#ffb52e";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      10,
+      -23,
+      4,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle =
+      "#fff0a0";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      10,
+      -23,
+      1.5,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+  }
+
+  ctx.fillStyle =
+    "white";
+
+  ctx.font =
+    "bold 9px Arial";
+
+  ctx.textAlign =
+    "center";
+
+  ctx.textBaseline =
+    "middle";
+
+  ctx.restore();
+}
+
+/* =========================
+   BACKGROUND
+========================= */
+
+let gridEnabled = true;
+let glowEnabled = true;
+let npcMovementEnabled = true;
+let npcAttacksEnabled = true;
+let selectedEntity = null;
+let sandboxFrozen = false;
+
+function drawBackground() {
+
+  const gradient =
+    ctx.createLinearGradient(
+      0,
+      0,
+      W,
+      H
+    );
+
+  gradient.addColorStop(
+    0,
+    "#171304"
+  );
+
+  gradient.addColorStop(
+    .5,
+    "#2b2407"
+  );
+
+  gradient.addColorStop(
+    1,
+    "#100d03"
+  );
+
+  ctx.fillStyle =
+    gradient;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  const glow =
+    ctx.createRadialGradient(
+      W / 2,
+      H * .42,
+      20,
+      W / 2,
+      H * .42,
+      Math.max(W,H) * .6
+    );
+
+  glow.addColorStop(
+    0,
+    `rgba(210,170,35,${glowEnabled ? ".10" : "0"})`
+  );
+
+  glow.addColorStop(
+    1,
+    "rgba(210,170,35,0)"
+  );
+
+  ctx.fillStyle =
+    glow;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+}
+
+function drawGround() {
+
+  ctx.fillStyle =
+    "rgba(125,96,18,.72)";
+
+  ctx.fillRect(
+    0,
+    H - WORLD.floorHeight,
+    W,
+    WORLD.floorHeight
+  );
+
+  ctx.fillStyle =
+    "rgba(224,183,43,.48)";
+
+  ctx.fillRect(
+    0,
+    H - WORLD.floorHeight,
+    W,
+    2
+  );
+
+  ctx.fillStyle =
+    "rgba(255,220,80,.08)";
+
+  for (
+    let x = 0;
+    x < W;
+    x += 24
+  ) {
+
+    ctx.fillRect(
+      x,
+      H - WORLD.floorHeight + 8,
+      1,
+      WORLD.floorHeight - 12
+    );
+  }
+}
+
+
+function drawWorldGrid() {
+  if (!gridEnabled) return;
+  ctx.save(); ctx.globalAlpha=.16; ctx.strokeStyle="#d8b72b"; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H-WORLD.floorHeight);ctx.stroke();}
+  for(let y=40;y<H-WORLD.floorHeight;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.restore();
+}
+
+function drawAimReticle() {
+  if (!heldTool || !player || player.respawning) return;
+  ctx.save();
+  ctx.translate(mouseX, mouseY);
+  ctx.strokeStyle = "rgba(255,238,120,.9)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 0, 8, 0, Math.PI * 2);
+  ctx.moveTo(-14, 0); ctx.lineTo(-5, 0);
+  ctx.moveTo(5, 0); ctx.lineTo(14, 0);
+  ctx.moveTo(0, -14); ctx.lineTo(0, -5);
+  ctx.moveTo(0, 5); ctx.lineTo(0, 14);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawHeldTool() {
+  if (!player || player.respawning) {
+    heldTool = null;
+    if (toolMode !== "part-remover") toolMode = null;
+    return;
+  }
+  if (!heldTool) return;
+  drawAimReticle();
+  if (heldTool === "rocket") { drawHeldRocketLauncher(); return; }
+  const angle = Math.atan2(mouseY-(player.y-8), mouseX-player.x);
+  ctx.save(); ctx.translate(player.x+Math.cos(angle)*24,player.y-8+Math.sin(angle)*24); ctx.rotate(angle);
+  if (heldTool === "noob-launcher") { ctx.fillStyle="#6f5708"; ctx.fillRect(-8,-7,34,14); ctx.fillStyle="#e0b72b"; ctx.fillRect(15,-11,13,22); }
+  else if (heldTool === "boom") { ctx.fillStyle="#6f5708"; ctx.fillRect(-7,-7,22,18); ctx.fillStyle="#e0b72b"; ctx.fillRect(11,-9,9,22); }
+  else if (heldTool === "spark") { ctx.strokeStyle="#ffe36a"; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(-4,8); ctx.lineTo(12,-10); ctx.stroke(); ctx.fillStyle="#fff3a0"; ctx.beginPath(); ctx.arc(14,-12,5,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+}
+
+function drawHeldRocketLauncher() {
+  const angle = Math.atan2(mouseY - (player.y - 8), mouseX - player.x);
+  ctx.save();
+  ctx.translate(player.x + Math.cos(angle) * 24, player.y - 8 + Math.sin(angle) * 24);
+  ctx.rotate(angle);
+  ctx.fillStyle = "#5b4708";
+  ctx.fillRect(-5, -7, 38, 14);
+  ctx.fillStyle = "#d8b72b";
+  ctx.fillRect(18, -10, 14, 20);
+  ctx.fillStyle = "#8f6f0b";
+  ctx.fillRect(-12, -5, 12, 10);
+  ctx.fillStyle = "#f2d45a";
+  ctx.fillRect(4, 7, 9, 16);
+  ctx.restore();
+}
+
+function draw() {
+
+  drawBackground();
+  drawGround();
+  drawWorldGrid();
+
+  for (const obj of objects) {
+
+    if (obj.type === "noob") {
+
+      drawNoob(
+        obj,
+        false
+      );
+
+    } else if (
+      obj.type === "bomb"
+    ) {
+
+      drawBomb(obj);
+
+    } else if (obj.type === "ball") {
+      ctx.save(); ctx.translate(obj.x,obj.y); ctx.rotate(obj.rotation);
+      ctx.fillStyle = "#d8b72b"; ctx.beginPath(); ctx.arc(0,0,16,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.stroke(); ctx.restore();
+
+    } else if (obj.type === "rocket") {
+      ctx.save(); ctx.translate(obj.x,obj.y); ctx.rotate(obj.rotation);
+      ctx.fillStyle="#8f6f0b"; ctx.fillRect(-7,-16,14,28);
+      ctx.fillStyle="#e0b72b"; ctx.beginPath(); ctx.moveTo(0,-23); ctx.lineTo(8,-10); ctx.lineTo(-8,-10); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="#ef5350"; ctx.fillRect(-5,12,10,10); ctx.restore();
+
+    } else if (obj.type === "boom") {
+      ctx.save(); ctx.translate(obj.x,obj.y); ctx.rotate(obj.rotation);
+      ctx.fillStyle="#6f5708"; ctx.fillRect(-27,-27,54,54);
+      ctx.strokeStyle="#e0b72b"; ctx.lineWidth=3; ctx.strokeRect(-27,-27,54,54);
+      ctx.fillStyle="#fff3a0"; ctx.font="bold 18px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("BOOM",0,0); ctx.restore();
+
+    } else if (
+      obj.type === "brokenPart"
+    ) {
+
+      drawBrokenPart(obj);
+
+    } else {
+
+      drawCrate(obj);
+    }
+  }
+
+  if (player) {
+    drawNoob(
+      player,
+      true
+    );
+
+    if (heldTool && !player.respawning) {
+      drawHeldTool();
+    }
+  }
+
+  drawExplosionEffects();
+}
+
+/* =========================
+   LEADERBOARD
+========================= */
+
+const leaderboard =
+  document.querySelector(
+    ".leaderboard"
+  );
+
+const leaderboardList =
+  document.getElementById(
+    "leaderboardList"
+  );
+
+leaderboardList.addEventListener(
+  "pointerdown",
+  e => {
+
+    const button =
+      e.target.closest(
+        ".rename-button"
+      );
+
+    if (!button) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const index =
+      Number(
+        button.dataset.index
+      );
+
+    const people = [];
+
+    if (player) {
+      people.push(player);
+    }
+
+    for (const obj of objects) {
+
+      if (obj.type === "noob") {
+        people.push(obj);
+      }
+    }
+
+    const person =
+      people[index];
+
+    if (!person) {
+      return;
+    }
+
+    openCharacterEditor(person);
+  }
+);
+
+function updateLeaderboard() {
+
+  leaderboardList.innerHTML = "";
+
+  const people = [];
+
+  if (player) {
+    people.push(player);
+  }
+
+  for (const obj of objects) {
+
+    if (obj.type === "noob") {
+      people.push(obj);
+    }
+  }
+
+  if (!people.length) {
+
+    leaderboardList.innerHTML =
+      `<div class="leader-empty">
+        No characters
+      </div>`;
+
+    return;
+  }
+
+  people.forEach(
+    (person, index) => {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+      row.className =
+        "leader-row";
+
+      const main =
+        document.createElement(
+          "div"
+        );
+
+      main.className =
+        "leader-main";
+
+      const nameLine =
+        document.createElement(
+          "div"
+        );
+
+      nameLine.className =
+        "leader-name-line";
+
+      const name =
+        document.createElement(
+          "span"
+        );
+
+      name.className =
+        "leader-name";
+
+      name.textContent =
+        person.name ||
+        "Unnamed";
+
+      const type =
+        document.createElement(
+          "span"
+        );
+
+      type.className =
+        "leader-type";
+
+      type.textContent =
+        person.type === "player"
+          ? "PLAYER"
+          : "NOOB";
+
+      nameLine.appendChild(name);
+      nameLine.appendChild(type);
+
+      const track =
+        document.createElement(
+          "div"
+        );
+
+      track.className =
+        "leader-health-track";
+
+      const bar =
+        document.createElement(
+          "div"
+        );
+
+      bar.className =
+        "leader-health-bar";
+
+      const maxHealth =
+        Math.max(
+          1,
+          person.maxHealth || 100
+        );
+
+      const health =
+        clamp(
+          person.health ??
+            maxHealth,
+          0,
+          maxHealth
+        );
+
+      const percent =
+        health / maxHealth;
+
+      bar.style.width =
+        `${percent * 100}%`;
+
+      const isGod =
+        (person.type === "player" && SETTINGS.godMode) ||
+        (person.type === "noob" && person.npcGod);
+
+      bar.style.background =
+        isGod
+          ? "#e0b72b"
+          : percent > .5
+            ? "#65d66f"
+            : percent > .25
+              ? "#f5c542"
+              : "#ef5350";
+
+      track.appendChild(bar);
+
+      const healthText =
+        document.createElement(
+          "div"
+        );
+
+      healthText.className =
+        "leader-health-text";
+
+      healthText.textContent =
+        `${Math.ceil(
+          health
+        )} / ${maxHealth}${
+          isGod
+            ? " • GOD"
+            : ""
+        }`;
+
+      main.appendChild(nameLine);
+      main.appendChild(track);
+      main.appendChild(healthText);
+
+      const rename =
+        document.createElement(
+          "button"
+        );
+
+      rename.type =
+        "button";
+
+      rename.className =
+        "rename-button";
+
+      rename.textContent =
+        "✎";
+
+      rename.title =
+        "Edit character / NPC";
+
+      rename.dataset.index =
+        index;
+
+      row.appendChild(main);
+      row.appendChild(rename);
+
+      leaderboardList.appendChild(row);
+    }
+  );
+}
+
+/* =========================
+   GRABBING / THROWING
+========================= */
+
+let grabbed = null;
+let grabPointer = null;
+let mouseX = W / 2;
+let mouseY = H / 2;
+
+let grabOffsetX = 0;
+let grabOffsetY = 0;
+
+const dragHistory = [];
+
+function inside(
+  x,
+  y,
+  body
+) {
+
+  return (
+    x >=
+      body.x -
+      body.width / 2 &&
+    x <=
+      body.x +
+      body.width / 2 &&
+    y >=
+      body.y -
+      body.height / 2 &&
+    y <=
+      body.y +
+      body.height / 2
+  );
+}
+
+function findTarget(
+  x,
+  y
+) {
+
+  for (
+    let i =
+      objects.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    if (
+      objects[i].type ===
+      "brokenPart"
+    ) {
+      continue;
+    }
+
+    if (
+      inside(
+        x,
+        y,
+        objects[i]
+      )
+    ) {
+      return objects[i];
+    }
+  }
+
+  if (
+    player &&
+    !player.respawning &&
+    inside(
+      x,
+      y,
+      player
+    )
+  ) {
+    return player;
+  }
+
+  return null;
+}
+
+function recordDrag(
+  x,
+  y
+) {
+
+  const now =
+    performance.now();
+
+  dragHistory.push({
+    x,
+    y,
+    time: now
+  });
+
+  while (
+    dragHistory.length > 14 ||
+    now -
+      dragHistory[0].time >
+      180
+  ) {
+
+    dragHistory.shift();
+  }
+}
+
+function throwVelocity() {
+
+  if (
+    dragHistory.length < 2
+  ) {
+    return {
+      vx: 0,
+      vy: 0
+    };
+  }
+
+  const latest =
+    dragHistory[
+      dragHistory.length - 1
+    ];
+
+  let old =
+    dragHistory[0];
+
+  for (
+    let i =
+      dragHistory.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    if (
+      latest.time -
+        dragHistory[i].time >=
+      35
+    ) {
+
+      old =
+        dragHistory[i];
+
+      break;
+    }
+  }
+
+  const dt =
+    Math.max(
+      .016,
+      (
+        latest.time -
+        old.time
+      ) / 1000
+    );
+
+  let vx =
+    (
+      latest.x -
+      old.x
+    ) / dt;
+
+  let vy =
+    (
+      latest.y -
+      old.y
+    ) / dt;
+
+  vx *= 1.8;
+  vy *= 1.8;
+
+  const speed =
+    Math.hypot(
+      vx,
+      vy
+    );
+
+  if (
+    speed >
+    WORLD.maxObjectSpeed
+  ) {
+
+    const scale =
+      WORLD.maxObjectSpeed /
+      speed;
+
+    vx *= scale;
+    vy *= scale;
+  }
+
+  return {
+    vx,
+    vy
+  };
+}
+
+function pointerDown(e) {
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  const x =
+    e.clientX -
+    rect.left;
+
+  const y =
+    e.clientY -
+    rect.top;
+
+  mouseX = x;
+  mouseY = y;
+
+  if (heldTool && player && !player.respawning) {
+    const heldX = player.x + Math.cos(Math.atan2(mouseY - (player.y - 8), mouseX - player.x)) * 24;
+    const heldY = player.y - 8 + Math.sin(Math.atan2(mouseY - (player.y - 8), mouseX - player.x)) * 24;
+    if (Math.hypot(x - heldX, y - heldY) < 32) {
+      unequipTools();
+      
+      return;
+    }
+  }
+
+  if (toolMode === "spark") {
+    let ignited = false;
+    for (const obj of [...objects]) {
+      if ((obj.type !== "boom" && obj.type !== "bomb") || obj.exploded) continue;
+      if (Math.hypot(obj.x - x, obj.y - y) <= Math.max(obj.width, obj.height) * .85) {
+        if (obj.type === "bomb") {
+          igniteBomb(obj);
+        } else {
+          explodeToolObject(obj, 150, 65);
+        }
+        ignited = true;
+        break;
+      }
+    }
+
+    for (let i = 0; i < 12; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const speed = 180 + Math.random() * 420;
+      objects.push({
+        type: "brokenPart",
+        x: x + (Math.random() - .5) * 25,
+        y: y + (Math.random() - .5) * 25,
+        vx: Math.cos(a) * speed,
+        vy: Math.sin(a) * speed,
+        width: 4, height: 4, rotation: 0, vr: 0, life: .28
+      });
+    }
+    if (ignited) {
+      showToast("Ignited!");
+      return;
+    }
+    // No ignition target: continue into normal grabbing.
+  }
+
+  if (toolMode === "rocket" && heldTool === "rocket" && player && !player.respawning && !findTarget(x, y)) {
+    const dx = x - player.x;
+    const dy = y - (player.y - 4);
+    const distance = Math.max(1, Math.hypot(dx, dy));
+    const speed = 1350;
+    createExplosionEffect(
+      player.x + dx / distance * 44,
+      player.y - 4 + dy / distance * 44,
+      30,
+      "muzzle"
+    );
+
+    objects.push({
+      type: "rocket",
+      x: player.x + dx / distance * 48,
+      y: player.y - 4 + dy / distance * 48,
+      vx: dx / distance * speed,
+      vy: dy / distance * speed,
+      rotation: Math.atan2(dy, dx) + Math.PI / 2,
+      vr: 0,
+      width: 18,
+      height: 38,
+      grabbed: false,
+      name: "Rocket",
+      life: 3
+    });
+    return;
+  }
+  if (toolMode === "noob-launcher" && heldTool === "noob-launcher" && player && !player.respawning) {
+    const dx = x - player.x;
+    const dy = y - (player.y - 4);
+    const distance = Math.max(1, Math.hypot(dx, dy));
+    const speed = 1050;
+    const n = createNoobObject(
+      player.x + dx / distance * 58,
+      player.y - 4 + dy / distance * 58
+    );
+    n.vx = dx / distance * speed;
+    n.vy = dy / distance * speed;
+    n.rotation = Math.atan2(dy, dx);
+    n.name = "Noob";
+    objects.push(n);
+    createExplosionEffect(n.x, n.y, 24, "muzzle");
+    updateLeaderboard();
+    return;
+  }
+  if (toolMode === "boom-tool") {
+    const existing = findTarget(x, y);
+    if (!existing) {
+      spawnObject("boom",x,y);
+      return;
+    }
+  }
+
+  /*
+    Part Remover gets priority over
+    normal grabbing.
+  */
+
+  if (
+    toolMode ===
+    "part-remover"
+  ) {
+
+    /*
+      Player gets checked first so the
+      player cannot accidentally have a
+      nearby Noob's overlapping part removed.
+    */
+
+    if (
+      player &&
+      !player.respawning
+    ) {
+
+      const playerTarget =
+        findBodyPartAt(
+          player,
+          x,
+          y
+        );
+
+      if (playerTarget) {
+
+        removePlayerPart(
+          playerTarget.part
+        );
+
+        return;
+      }
+    }
+
+    const target =
+      findNoobPartAt(
+        x,
+        y
+      );
+
+    if (target) {
+
+      removeNoobPart(
+        target.noob,
+        target.part
+      );
+    }
+
+    return;
+  }
+
+  const target =
+    findTarget(
+      x,
+      y
+    );
+
+  selectedEntity = target;
+  updateSelectedNpcUI();
+
+  if (!target) {
+    return;
+  }
+
+  if (
+    target.type === "bomb" &&
+    target.exploded
+  ) {
+    return;
+  }
+
+  grabbed =
+    target;
+
+  grabPointer =
+    e.pointerId;
+
+  grabOffsetX =
+    target.x - x;
+
+  grabOffsetY =
+    target.y - y;
+
+  target.vx = 0;
+  target.vy = 0;
+  target.vr = 0;
+
+  if (
+    target === player
+  ) {
+    player.grounded =
+      false;
+  }
+
+  dragHistory.length = 0;
+
+  recordDrag(
+    x,
+    y
+  );
+
+  canvas.setPointerCapture(
+    e.pointerId
+  );
+}
+
+function pointerMove(e) {
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  const x =
+    e.clientX -
+    rect.left;
+
+  const y =
+    e.clientY -
+    rect.top;
+
+  // Always track the cursor so held tools follow the mouse
+  // even when nothing is being grabbed.
+  mouseX = x;
+  mouseY = y;
+
+  if (
+    !grabbed ||
+    e.pointerId !==
+      grabPointer
+  ) {
+    return;
+  }
+
+  recordDrag(
+    x,
+    y
+  );
+
+  grabbed.x =
+    x + grabOffsetX;
+
+  grabbed.y =
+    y + grabOffsetY;
+
+  grabbed.vx = 0;
+  grabbed.vy = 0;
+  grabbed.vr = 0;
+
+  const halfW =
+    grabbed.width / 2;
+
+  const halfH =
+    grabbed.height / 2;
+
+  grabbed.x =
+    clamp(
+      grabbed.x,
+      halfW,
+      W - halfW
+    );
+
+  grabbed.y =
+    clamp(
+      grabbed.y,
+      halfH,
+      H -
+        WORLD.floorHeight -
+        halfH
+    );
+}
+
+function pointerUp(e) {
+
+  if (
+    !grabbed ||
+    e.pointerId !==
+      grabPointer
+  ) {
+    return;
+  }
+
+  const velocity =
+    throwVelocity();
+
+  grabbed.vx =
+    velocity.vx;
+
+  grabbed.vy =
+    velocity.vy;
+
+  if (
+    grabbed !== player
+  ) {
+
+    grabbed.vr =
+      velocity.vx *
+      .008;
+  }
+
+  if (
+    grabbed === player
+  ) {
+
+    player.grounded =
+      false;
+  }
+
+  grabbed = null;
+  grabPointer = null;
+
+  dragHistory.length = 0;
+}
+
+canvas.addEventListener(
+  "pointerdown",
+  pointerDown
+);
+
+canvas.addEventListener(
+  "pointermove",
+  pointerMove
+);
+
+canvas.addEventListener(
+  "pointerup",
+  pointerUp
+);
+
+canvas.addEventListener(
+  "pointercancel",
+  pointerUp
+);
+
+/* =========================
+   UI
+========================= */
+
+const astraButton =
+  document.getElementById(
+    "astraButton"
+  );
+
+const astraPanel =
+  document.getElementById(
+    "astraPanel"
+  );
+
+const spawnButton =
+  document.getElementById(
+    "spawnButton"
+  );
+
+const spawnMenu =
+  document.getElementById(
+    "spawnMenu"
+  );
+
+astraButton.addEventListener(
+  "click",
+  () => {
+
+    astraPanel.classList.toggle(
+      "open"
+    );
+
+    spawnMenu.classList.remove(
+      "open"
+    );
+
+    leaderboard.classList.remove(
+      "hidden-for-spawn"
+    );
+  }
+);
+
+/* =========================
+   SPAWN MENU / LEADERBOARD
+========================= */
+
+spawnButton.addEventListener(
+  "click",
+  () => {
+
+    const opening =
+      !spawnMenu.classList.contains(
+        "open"
+      );
+
+    spawnMenu.classList.toggle(
+      "open"
+    );
+
+    astraPanel.classList.remove(
+      "open"
+    );
+
+    if (opening) {
+
+      leaderboard.classList.add(
+        "hidden-for-spawn"
+      );
+
+    } else {
+
+      leaderboard.classList.remove(
+        "hidden-for-spawn"
+      );
+    }
+  }
+);
+
+/* =========================
+   SETTINGS
+========================= */
+
+const walkSpeed =
+  document.getElementById(
+    "walkSpeed"
+  );
+
+const jumpPower =
+  document.getElementById(
+    "jumpPower"
+  );
+
+const runSpeed =
+  document.getElementById(
+    "runSpeed"
+  );
+
+const walkSpeedValue =
+  document.getElementById(
+    "walkSpeedValue"
+  );
+
+const jumpPowerValue =
+  document.getElementById(
+    "jumpPowerValue"
+  );
+
+const runSpeedValue =
+  document.getElementById(
+    "runSpeedValue"
+  );
+
+const runningToggle =
+  document.getElementById(
+    "runningToggle"
+  );
+
+const runningValue =
+  document.getElementById(
+    "runningValue"
+  );
+
+const godModeToggle =
+  document.getElementById(
+    "godModeToggle"
+  );
+
+const godModeValue =
+  document.getElementById(
+    "godModeValue"
+  );
+
+walkSpeed.addEventListener(
+  "input",
+  () => {
+
+    SETTINGS.walkSpeed =
+      Number(
+        walkSpeed.value
+      );
+
+    walkSpeedValue.textContent =
+      SETTINGS.walkSpeed;
+  }
+);
+
+jumpPower.addEventListener(
+  "input",
+  () => {
+
+    SETTINGS.jumpPower =
+      Number(
+        jumpPower.value
+      );
+
+    jumpPowerValue.textContent =
+      SETTINGS.jumpPower;
+  }
+);
+
+runSpeed.addEventListener(
+  "input",
+  () => {
+
+    SETTINGS.runSpeed =
+      Number(
+        runSpeed.value
+      );
+
+    runSpeedValue.textContent =
+      SETTINGS.runSpeed;
+  }
+);
+
+runningToggle.addEventListener(
+  "click",
+  () => {
+
+    SETTINGS.runningEnabled =
+      !SETTINGS.runningEnabled;
+
+    const enabled =
+      SETTINGS.runningEnabled;
+
+    runningToggle.textContent =
+      `Running: ${
+        enabled
+          ? "ON"
+          : "OFF"
+      }`;
+
+    runningToggle.classList.toggle(
+      "primary",
+      enabled
+    );
+
+    runningValue.textContent =
+      enabled
+        ? "ON"
+        : "OFF";
+  }
+);
+
+godModeToggle.addEventListener(
+  "click",
+  () => {
+
+    SETTINGS.godMode =
+      !SETTINGS.godMode;
+
+    const enabled =
+      SETTINGS.godMode;
+
+    godModeToggle.textContent =
+      `God Mode: ${
+        enabled
+          ? "ON"
+          : "OFF"
+      }`;
+
+    godModeToggle.classList.toggle(
+      "primary",
+      enabled
+    );
+
+    godModeValue.textContent =
+      enabled
+        ? "ON"
+        : "OFF";
+
+    if (
+      enabled &&
+      player
+    ) {
+      player.health =
+        player.maxHealth;
+    }
+
+    updateLeaderboard();
+
+    showToast(
+      enabled
+        ? "God Mode enabled"
+        : "God Mode disabled"
+    );
+  }
+);
+
+/* =========================
+   COLORS
+========================= */
+
+const colorInputs = {
+
+  head:
+    document.getElementById(
+      "headColor"
+    ),
+
+  torso:
+    document.getElementById(
+      "torsoColor"
+    ),
+
+  leftArm:
+    document.getElementById(
+      "leftArmColor"
+    ),
+
+  rightArm:
+    document.getElementById(
+      "rightArmColor"
+    ),
+
+  leftLeg:
+    document.getElementById(
+      "leftLegColor"
+    ),
+
+  rightLeg:
+    document.getElementById(
+      "rightLegColor"
+    )
+};
+
+for (
+  const key in colorInputs
+) {
+
+  colorInputs[key].addEventListener(
+    "input",
+    () => {
+
+      SETTINGS.colors[key] =
+        colorInputs[key].value;
+
+      if (player) {
+
+        player.colors[key] =
+          colorInputs[key].value;
+      }
+
+      for (
+        const obj of objects
+      ) {
+
+        if (
+          obj.type === "noob"
+        ) {
+
+          obj.colors[key] =
+            colorInputs[key].value;
+        }
+      }
+    }
+  );
+}
+
+/* =========================
+   BUTTON EVENTS
+========================= */
+
+document
+  .getElementById(
+    "resetCharacter"
+  )
+  .addEventListener(
+    "click",
+    resetPlayer
+  );
+
+document
+  .getElementById(
+    "deleteCharacter"
+  )
+  .addEventListener(
+    "click",
+    deletePlayer
+  );
+
+document
+  .getElementById(
+    "spawnMe"
+  )
+  .addEventListener(
+    "click",
+    spawnPlayer
+  );
+
+document
+  .getElementById(
+    "spawnNoob"
+  )
+  .addEventListener(
+    "click",
+    spawnNoob
+  );
+
+document
+  .getElementById(
+    "spawnCrate"
+  )
+  .addEventListener(
+    "click",
+    spawnCrate
+  );
+
+document
+  .getElementById(
+    "spawnBomb"
+  )
+  .addEventListener(
+    "click",
+    spawnBomb
+  );
+
+partRemoverButton.addEventListener(
+  "click",
+  togglePartRemover
+);
+
+document
+  .getElementById(
+    "resetSandbox"
+  )
+  .addEventListener(
+    "click",
+    resetSandbox
+  );
+
+document
+  .getElementById(
+    "mobileJump"
+  )
+  .addEventListener(
+    "pointerdown",
+    e => {
+
+      e.preventDefault();
+
+      if (player) {
+        player.jumpRequested =
+          true;
+      }
+    }
+  );
+
+/* =========================
+   DRAGGABLE SPAWN MENU
+========================= */
+
+const spawnHeader =
+  document.getElementById(
+    "spawnHeader"
+  );
+
+let draggingMenu =
+  false;
+
+let dragStartX = 0;
+let dragStartY = 0;
+
+let originalRight = 16;
+let originalBottom = 82;
+
+spawnHeader.addEventListener(
+  "pointerdown",
+  e => {
+
+    draggingMenu =
+      true;
+
+    const rect =
+      spawnMenu.getBoundingClientRect();
+
+    dragStartX =
+      e.clientX;
+
+    dragStartY =
+      e.clientY;
+
+    originalRight =
+      window.innerWidth -
+      rect.right;
+
+    originalBottom =
+      window.innerHeight -
+      rect.bottom;
+
+    spawnHeader.setPointerCapture(
+      e.pointerId
+    );
+  }
+);
+
+spawnHeader.addEventListener(
+  "pointermove",
+  e => {
+
+    if (!draggingMenu) {
+      return;
+    }
+
+    const dx =
+      e.clientX -
+      dragStartX;
+
+    const dy =
+      e.clientY -
+      dragStartY;
+
+    const rect =
+      spawnMenu.getBoundingClientRect();
+
+    let right =
+      originalRight -
+      dx;
+
+    let bottom =
+      originalBottom -
+      dy;
+
+    right =
+      clamp(
+        right,
+        8,
+        window.innerWidth -
+          rect.width -
+          8
+      );
+
+    bottom =
+      clamp(
+        bottom,
+        8,
+        window.innerHeight -
+          rect.height -
+          8
+      );
+
+    spawnMenu.style.right =
+      right + "px";
+
+    spawnMenu.style.bottom =
+      bottom + "px";
+
+    spawnMenu.style.left =
+      "auto";
+  }
+);
+
+function stopMenuDrag() {
+  draggingMenu =
+    false;
+}
+
+spawnHeader.addEventListener(
+  "pointerup",
+  stopMenuDrag
+);
+
+spawnHeader.addEventListener(
+  "pointercancel",
+  stopMenuDrag
+);
+
+/* =========================
+   TOAST
+========================= */
+
+const toast =
+  document.getElementById(
+    "toast"
+  );
+
+let toastTimer = null;
+
+function showToast(message) {
+
+  toast.textContent =
+    message;
+
+  toast.classList.add(
+    "show"
+  );
+
+  clearTimeout(
+    toastTimer
+  );
+
+  toastTimer =
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      1800
+    );
+}
+
+/* =========================
+   STATUS
+========================= */
+
+const characterStatus =
+  document.getElementById(
+    "characterStatus"
+  );
+
+function updateStatus() {
+
+  characterStatus.textContent =
+    player
+      ? SETTINGS.godMode
+        ? "Character active • God Mode"
+        : "Character active"
+      : "No character found";
+}
+
+/* =========================
+   CHARACTER / NPC EDITOR
+========================= */
+const editorPanel = document.getElementById("editorPanel");
+const editorName = document.getElementById("editorName");
+const editorSubtitle = document.getElementById("editorSubtitle");
+const editorColors = {
+  head: document.getElementById("editorHead"), torso: document.getElementById("editorTorso"),
+  leftArm: document.getElementById("editorLeftArm"), rightArm: document.getElementById("editorRightArm"),
+  leftLeg: document.getElementById("editorLeftLeg"), rightLeg: document.getElementById("editorRightLeg")
+};
+let editingEntity = null;
+function openCharacterEditor(entity) {
+  editingEntity = entity;
+  editorName.value = entity.name || "Noob";
+  const c = entity.colors || SETTINGS.colors;
+  Object.keys(editorColors).forEach(k => editorColors[k].value = c[k] || SETTINGS.colors[k]);
+  editorSubtitle.textContent = entity === player ? "Edit the player character." : "Edit this NPC.";
+  editorPanel.classList.add("open");
+}
+function closeCharacterEditor() { editingEntity=null; editorPanel.classList.remove("open"); }
+function applyCharacterEditor() {
+  if (!editingEntity) return;
+  editingEntity.name = editorName.value.trim().slice(0,24) || (editingEntity === player ? "Player" : "Noob");
+  editingEntity.colors = {};
+  Object.keys(editorColors).forEach(k => editingEntity.colors[k] = editorColors[k].value);
+  updateLeaderboard(); updateSelectedNpcUI(); showToast("Character updated!");
+}
+document.getElementById("editorClose").onclick = closeCharacterEditor;
+document.getElementById("editorApply").onclick = applyCharacterEditor;
+document.getElementById("customNpc").onclick = () => {
+  const n = createNoobObject(W/2,120); n.name = "Custom NPC"; n.behavior="follow"; n.npcGod=false; n.npcMovement=true; n.npcSpeed=720;
+  objects.push(n); selectedEntity=n; updateSelectedNpcUI(); updateLeaderboard(); openCharacterEditor(n); showToast("Custom NPC spawned!");
+};
+
+/* =========================
+   0.5.0 ALPHA SYSTEMS
+========================= */
+function updateSelectedNpcUI() {
+  const label=document.getElementById("selectedNpcLabel");
+  const n=selectedEntity && selectedEntity.type==="noob" ? selectedEntity : null;
+  if(label) label.textContent=n ? (n.name||"Noob") : "None";
+  ["npcPassive","npcFollow","npcAttack"].forEach(id=>document.getElementById(id)?.classList.remove("selected"));
+  const godButton=document.getElementById("npcGod");
+  if(godButton) godButton.textContent="Selected NPC God Mode: "+(n && n.npcGod ? "ON" : "OFF");
+  if(n && n.behavior) document.getElementById("npc"+(n.behavior.charAt(0).toUpperCase()+n.behavior.slice(1)))?.classList.add("selected");
+}
+function selectedNpc(){ return selectedEntity && selectedEntity.type==="noob" ? selectedEntity : null; }
+function setNpcBehavior(mode){ const n=selectedNpc(); if(!n){showToast("Select a Noob first");return;} n.behavior=mode; updateSelectedNpcUI(); showToast("NPC: "+mode); }
+function duplicateSelected(){
+  const n=selectedNpc(); if(!n){showToast("Select a Noob first");return;}
+  const copy=JSON.parse(JSON.stringify(n)); copy.x+=55; copy.y-=30; copy.name=(n.name||"Noob")+" Copy"; copy.grabbed=false; objects.push(copy); selectedEntity=copy; updateSelectedNpcUI(); updateLeaderboard(); showToast("NPC duplicated!");
+}
+function deleteSelected(){
+  const n=selectedNpc(); if(!n){showToast("Select a Noob first");return;}
+  const i=objects.indexOf(n); if(i>=0) objects.splice(i,1); selectedEntity=null; updateSelectedNpcUI(); updateLeaderboard(); showToast("NPC deleted!");
+}
+document.getElementById("npcPassive").onclick=()=>setNpcBehavior("passive");
+document.getElementById("npcFollow").onclick=()=>setNpcBehavior("follow");
+document.getElementById("npcAttack").onclick=()=>setNpcBehavior("attack");
+document.getElementById("npcDuplicate").onclick=duplicateSelected;
+document.getElementById("npcDelete").onclick=deleteSelected;
+document.getElementById("npcMovement").onclick=e=>{npcMovementEnabled=!npcMovementEnabled;e.target.textContent="NPC Movement: "+(npcMovementEnabled?"ON":"OFF");};
+document.getElementById("npcAttacks").onclick=e=>{npcAttacksEnabled=!npcAttacksEnabled;e.target.textContent="NPC Attacks: "+(npcAttacksEnabled?"ON":"OFF");};
+document.getElementById("npcGod").onclick=e=>{const n=selectedNpc();if(!n){showToast("Select a Noob first");return;}n.npcGod=!n.npcGod;e.target.textContent="Selected NPC God Mode: "+(n.npcGod?"ON":"OFF");};
+document.getElementById("toggleGrid").onclick=e=>{gridEnabled=!gridEnabled;e.target.textContent="Grid: "+(gridEnabled?"ON":"OFF");};
+document.getElementById("toggleShader").onclick=e=>{glowEnabled=!glowEnabled;e.target.textContent="Glow: "+(glowEnabled?"ON":"OFF");};
+document.getElementById("freezeAll").onclick=()=>{sandboxFrozen=true;showToast("Sandbox frozen!");};
+document.getElementById("unfreezeAll").onclick=()=>{sandboxFrozen=false;showToast("Sandbox unfrozen!");};
+document.getElementById("spawnBall").onclick=spawnBall;
+function requirePlayerForTool() {
+  if (!player || player.respawning) {
+    showToast("Spawn a character first");
+    return false;
+  }
+  return true;
+}
+
+document.getElementById("sparkTool").onclick=()=>{
+  if (!requirePlayerForTool()) return;
+  toolMode=toolMode==="spark"?null:"spark";
+  heldTool=toolMode?"spark":null;
+  
+};
+document.getElementById("boomBlock").onclick=()=>{
+  if (!requirePlayerForTool()) return;
+  spawnBoom();
+};
+document.getElementById("rocketLauncher").onclick=()=>{
+  if (!requirePlayerForTool()) return;
+  if (toolMode === "rocket" && heldTool === "rocket") {
+    unequipTools();
+    
+    return;
+  }
+  toolMode="rocket";
+  heldTool="rocket";
+  
+};
+document.getElementById("noobLauncher").onclick=()=>{
+  if (!requirePlayerForTool()) return;
+  if (toolMode === "noob-launcher" && heldTool === "noob-launcher") {
+    unequipTools();
+    
+    return;
+  }
+  toolMode="noob-launcher";
+  heldTool="noob-launcher";
+  
+};
+
+
+const controlsPanel = document.getElementById("controlsPanel");
+document.getElementById("controlsButton").onclick = () => controlsPanel.classList.add("open");
+document.getElementById("controlsClose").onclick = () => controlsPanel.classList.remove("open");
+
+/* =========================
+   GAME LOOP
+========================= */
+
+let lastTime =
+  performance.now();
+
+function gameLoop(now) {
+
+  let dt =
+    (now - lastTime) /
+    1000;
+
+  lastTime =
+    now;
+
+  dt =
+    Math.min(
+      dt,
+      .033
+    );
+
+  updatePlayer(dt);
+
+  for (
+    const obj of objects
+  ) {
+
+    updateObject(
+      obj,
+      dt
+    );
+  }
+
+  updateExplosionEffects(dt);
+
+  for (
+    let i =
+      objects.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    const obj =
+      objects[i];
+
+    if (obj.type === "bomb" && obj.exploded && obj.explosionTimer <= 0) {
+
+      objects.splice(
+        i,
+        1
+      );
+
+      continue;
+    }
+
+    if (
+      obj.type === "brokenPart" &&
+      obj.life <= 0
+    ) {
+
+      objects.splice(
+        i,
+        1
+      );
+    }
+  }
+
+  solveCollisions();
+
+  updateLeaderboard();
+
+  draw();
+
+  requestAnimationFrame(
+    gameLoop
+  );
+}
+
+updateStatus();
+updateLeaderboard();
+
+requestAnimationFrame(
+  gameLoop
+);
+</script>
+
+</body>
+</html>
