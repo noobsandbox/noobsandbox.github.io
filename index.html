@@ -1,1 +1,382 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101014">
+
+    <title>Noob Sandbox</title>
+
+    <link
+        rel="icon"
+        href="https://noobsandbox.github.io/images/noobsandboxsmallicon.ico"
+    >
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #101014;
+            --panel: #19191f;
+            --panel-light: #22222b;
+            --accent: #ffcc00;
+            --accent-hover: #ffe566;
+            --text: #ffffff;
+            --muted: #a1a1b0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--text);
+            font-family: "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(
+                    ellipse at 50% 25%,
+                    #665000 0%,
+                    transparent 55%
+                ),
+                var(--bg);
+        }
+
+        /* HEADER */
+
+        header {
+            min-height: 76px;
+            padding: 0 7%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            border-bottom: 1px solid #ffffff12;
+            background: #10101480;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -0.7px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .version {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border: 1px solid #ffffff20;
+            border-radius: 20px;
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+
+        /* MAIN */
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1000px;
+            margin: auto;
+            padding: 70px 24px 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* GAME BANNER */
+
+        .game-art {
+            position: relative;
+            width: min(100%, 620px);
+            aspect-ratio: 16 / 7;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 35px;
+            border: 1px solid #ffffff20;
+            border-radius: 22px;
+            background:
+                radial-gradient(
+                    circle at 50% 100%,
+                    #ffcc0080,
+                    transparent 50%
+                ),
+                linear-gradient(135deg, #38301a, #17171e 70%);
+            box-shadow: 0 25px 80px #00000050;
+        }
+
+        .game-art::before,
+        .game-art::after {
+            content: "";
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 1px solid #ffdf4d30;
+            transform: rotate(45deg);
+            pointer-events: none;
+        }
+
+        .game-art::before {
+            left: -90px;
+            top: -55px;
+        }
+
+        .game-art::after {
+            right: -90px;
+            bottom: -90px;
+        }
+
+        .art-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-logo {
+            width: clamp(90px, 18vw, 140px);
+            height: clamp(90px, 18vw, 140px);
+            object-fit: contain;
+            filter: drop-shadow(0 12px 20px #00000060);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-9px);
+            }
+        }
+
+        /* TITLE AND DESCRIPTION */
+
+        .eyebrow {
+            margin-bottom: 16px;
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: clamp(38px, 7vw, 64px);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -2px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .description {
+            max-width: 450px;
+            margin: 20px auto 30px;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        /* PLAY BUTTON */
+
+        .play-button {
+            min-width: 220px;
+            min-height: 62px;
+            padding: 18px 35px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: none;
+            border-radius: 14px;
+            background: var(--accent);
+            color: #17140a;
+            font-size: 17px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-decoration: none;
+            box-shadow: 0 8px 30px #ffcc0035;
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .play-button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px #ffcc0050;
+        }
+
+        .play-button:active {
+            transform: scale(0.97);
+        }
+
+        .play-button:focus-visible {
+            outline: 3px solid white;
+            outline-offset: 5px;
+        }
+
+        .play-icon {
+            font-size: 20px;
+        }
+
+        .hint {
+            margin-top: 18px;
+            color: #858592;
+            font-size: 12px;
+        }
+
+        /* FOOTER */
+
+        footer {
+            padding: 24px 20px;
+            border-top: 1px solid #ffffff12;
+            background: #0c0c10;
+            text-align: center;
+        }
+
+        footer p {
+            color: #858592;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        footer .disclaimer {
+            margin-top: 5px;
+            color: #696976;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 500px) {
+            header {
+                min-height: 66px;
+                padding: 0 18px;
+            }
+
+            .logo {
+                gap: 9px;
+                font-size: 17px;
+            }
+
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .version {
+                padding: 7px 9px;
+                font-size: 9px;
+            }
+
+            main {
+                padding: 50px 20px 60px;
+            }
+
+            .game-art {
+                border-radius: 16px;
+            }
+
+            .description {
+                font-size: 14px;
+            }
+
+            .play-button {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            footer p {
+                font-size: 11px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img
+                class="logo-icon"
+                src="https://noobsandbox.github.io/images/noobsandboxsmallicon.ico"
+                alt="Noob Sandbox logo"
+            >
+
+            <span>Noob Sandbox</span>
+        </div>
+
+        <span class="version">WEB EDITION</span>
+    </header>
+
+    <main>
+        <div class="game-art">
+            <div class="art-content">
+                <img
+                    class="game-logo"
+                    src="https://noobsandbox.github.io/images/noobsandboxsmallicon.ico"
+                    alt="Noob Sandbox"
+                >
+            </div>
+        </div>
+
+        <p class="eyebrow">Your sandbox awaits</p>
+
+        <h1>Noob <span>Sandbox</span></h1>
+
+        <p class="description">
+            Build, experiment, and make a mess.
+            Jump into the sandbox and let your creativity run wild.
+        </p>
+
+        <a class="play-button" href="game.html">
+            <span class="play-icon" aria-hidden="true">▶</span>
+            PLAY NOW
+        </a>
+
+        <p class="hint">Ready when you are.</p>
+    </main>
+
+    <footer>
+        <p>© Noob Sandbox. All rights reserved.</p>
+
+        <p class="disclaimer">
+            Noob Sandbox is not affiliated with, endorsed by,
+            or sponsored by Roblox Corporation.
+        </p>
+    </footer>
+
+</body>
+</html>
+
